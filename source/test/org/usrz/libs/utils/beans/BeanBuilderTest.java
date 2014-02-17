@@ -13,13 +13,14 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * ========================================================================== */
-package org.usrz.libs.beans;
+package org.usrz.libs.utils.beans;
 
 import java.lang.reflect.Field;
 
 import org.testng.annotations.Test;
 import org.usrz.libs.logging.Logging;
 import org.usrz.libs.testing.AbstractTest;
+import org.usrz.libs.utils.beans.BeanBuilder;
 
 public class BeanBuilderTest extends AbstractTest {
 

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * ========================================================================== */
-package org.usrz.libs.beans;
+package org.usrz.libs.utils.beans;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -30,7 +30,11 @@ import javassist.CtField;
 import javassist.CtMethod;
 import javassist.Modifier;
 import javassist.NotFoundException;
+import javassist.bytecode.AnnotationsAttribute;
+import javassist.bytecode.ClassFile;
+import javassist.bytecode.ConstPool;
 import javassist.bytecode.analysis.Type;
+import javassist.bytecode.annotation.Annotation;
 
 /**
  * A {@link BeanBuilder} <em>automagically</em> creates bean getters, setters
@@ -111,7 +115,7 @@ public class BeanBuilder {
         if (methodName.startsWith("is") && (parameters.length == 0))
             return instrumentGetter(concreteClass, method, fieldName(method, 2));
 
-        throw new IllegalStateException("Unable to implement method " + method.getSignature());
+        throw new IllegalStateException("Unable to implement method " + formatMethod(method));
 
     }
 
@@ -131,7 +135,6 @@ public class BeanBuilder {
             if (logger.isLoggable(Level.FINER)) logger.finer("Skipping existing field declaration " + fieldName + " in setter");
         } catch (NotFoundException exception) {
             final CtField newField = new CtField(parameterType, fieldName, concreteClass);
-            newField.setModifiers(Modifier.PRIVATE);
             concreteClass.addField(newField);
             if (logger.isLoggable(Level.FINER)) logger.finer("Adding field " + parameterType.getName() + " " + fieldName + " for setter");
         }
@@ -144,7 +147,7 @@ public class BeanBuilder {
         } else if (returnType.isAssignableFrom(concreteType)) {
             returnThis = true;
         } else {
-            throw new IllegalStateException("Unable to implement method " + method.getSignature());
+            throw new IllegalStateException("Unable to implement method " + formatMethod(method));
         }
 
         final StringBuilder body = new StringBuilder(Modifier.toString(method.getModifiers() ^ Modifier.ABSTRACT))
@@ -181,7 +184,7 @@ public class BeanBuilder {
             if (logger.isLoggable(Level.FINER)) logger.finer("Skipping existing field declaration " + fieldName + " in getter");
         } catch (NotFoundException exception) {
             final CtField newField = new CtField(method.getReturnType(), fieldName, concreteClass);
-            newField.setModifiers(Modifier.PRIVATE);
+            newField.setModifiers(Modifier.PUBLIC);
             concreteClass.addField(newField);
             if (logger.isLoggable(Level.FINER)) logger.finer("Adding field " + method.getReturnType().getName() + " " + fieldName + " for getter");
         }
@@ -204,7 +207,7 @@ public class BeanBuilder {
 
     }
 
-    private <T> Class<T> createClass(Class<T> abstractClass, Class<?>... interfaces)
+    private Class<?> createClass(Class<?> fieldAnnotation, Class<?> abstractClass, Class<?>[] interfaces)
     throws NotFoundException, CannotCompileException {
 
         /* Primitive? Forget it! */
@@ -321,31 +324,62 @@ public class BeanBuilder {
             }
         }
 
+        /* Annotate fields? */
+        if (fieldAnnotation != null) {
+            final String annotationName = fieldAnnotation.getName();
+            final ClassFile concreteClassFile = concreteClass.getClassFile();
+            final ConstPool constpool = concreteClassFile.getConstPool();
+            for (CtField field: concreteClass.getDeclaredFields()) {
+                System.err.println("Should Annotate " + field);
+
+                Annotation annot = new Annotation(annotationName, constpool);
+
+                AnnotationsAttribute attr = new AnnotationsAttribute(constpool, AnnotationsAttribute.visibleTag);
+                attr.addAnnotation(annot);
+                //annot.addMemberValue("value", new IntegerMemberValue(ccFile.getConstPool(), 0));
+                field.getFieldInfo().addAttribute(attr);
+    //            concreteClassFile.addAttribute(attr);
+
+            }
+        }
+
         /* All done, return our class */
-        @SuppressWarnings("unchecked")
-        final Class<T> clazz = classPool.toClass(concreteClass);
-        return clazz;
+        return classPool.toClass(concreteClass);
     }
 
-    public <T> Class<T> newClass(Class<T> abstractClass) {
-        return this.newClass(abstractClass, EMPTY_INTERFACES);
+    /* ====================================================================== */
+
+    public <T> Class<T> newClass(Class<?> abstractClass) {
+        return this.newClass(null, abstractClass, EMPTY_INTERFACES);
     }
 
-    public <T> Class<T> newClass(Class<T> abstractClass, Class<?>... interfaces) {
+    public <T> Class<T> newClass(Class<?> abstractClass, Class<?>... interfaces) {
+        return this.newClass(null, abstractClass, interfaces);
+    }
+
+    public <T> Class<T> newClass(Class<? extends java.lang.annotation.Annotation> fieldAnnotation, Class<?> abstractClass) {
+        return this.newClass(fieldAnnotation, abstractClass, EMPTY_INTERFACES);
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> Class<T> newClass(Class<? extends java.lang.annotation.Annotation> fieldAnnotation, Class<?> abstractClass, Class<?>... interfaces) {
         if (abstractClass == null) throw new NullPointerException("Null class to implement");
         if (interfaces == null) interfaces = EMPTY_INTERFACES;
         try {
-            return this.createClass(abstractClass, interfaces);
+            return (Class<T>) createClass(fieldAnnotation, abstractClass, interfaces);
         } catch (NotFoundException | CannotCompileException exception) {
             throw new IllegalStateException("Unable to create implementation of " + abstractClass.getName(), exception);
         }
     }
 
-    public static <T> T newInstance(Class<T> concreteClass) {
+    /* ====================================================================== */
+
+    public static <T> T newInstance(Class<?> concreteClass) {
         return newInstance(concreteClass, (Object[]) null);
     }
 
-    public static <T> T newInstance(Class<T> concreteClass, Object... parameters) {
+    @SuppressWarnings("unchecked")
+    public static <T> T newInstance(Class<?> concreteClass, Object... parameters) {
 
         final Class<?>[] classes = new Class<?>[parameters == null ? 0 : parameters.length];
         if (parameters == null) parameters = new Object[0];
@@ -354,14 +388,20 @@ public class BeanBuilder {
         }
 
         try {
-            final Constructor<T> constructor = concreteClass.getConstructor(classes);
+            final Constructor<?> constructor = concreteClass.getConstructor(classes);
             if (logger.isLoggable(Level.FINE))
                 logger.fine("Creating new instance of " + concreteClass.getName() + " with " + constructor);
-            return constructor.newInstance(parameters);
+            constructor.setAccessible(true);
+            return (T) constructor.newInstance(parameters);
 
         } catch (NoSuchMethodException exception) {
             // No constructor found, upwards and onwards!
-        } catch (InstantiationException  | IllegalAccessException | InvocationTargetException exception) {
+        } catch (InvocationTargetException exception) {
+            final Throwable cause = exception.getCause();
+            if (cause instanceof RuntimeException) throw (RuntimeException) cause;
+            if (cause instanceof Error) throw (Error) cause;
+            throw new IllegalStateException("Constructor of " + concreteClass.getName() + " threw an exception", exception);
+        } catch (InstantiationException  | IllegalAccessException exception) {
             throw new IllegalStateException("Unable to create instance of " + concreteClass.getName(), exception);
         }
 
@@ -370,14 +410,19 @@ public class BeanBuilder {
                 if (isAssignable(constructor.getParameterTypes(), parameters)) {
                     if (logger.isLoggable(Level.FINE))
                         logger.fine("Creating new instance of " + concreteClass.getName() + " with " + constructor);
-                    @SuppressWarnings("unchecked")
-                    final T instance = (T) constructor.newInstance(parameters);
-                    return instance;
+                    constructor.setAccessible(true);
+                    return (T) constructor.newInstance(parameters);
                 }
             }
 
-            return concreteClass.newInstance();
-        } catch (InstantiationException | IllegalAccessException | InvocationTargetException exception) {
+            throw new IllegalStateException("No constructor for " + concreteClass.getName() + " found with specified parameters");
+
+        } catch (InvocationTargetException exception) {
+            final Throwable cause = exception.getCause();
+            if (cause instanceof RuntimeException) throw (RuntimeException) cause;
+            if (cause instanceof Error) throw (Error) cause;
+            throw new IllegalStateException("Constructor of " + concreteClass.getName() + " threw an exception", exception);
+        } catch (InstantiationException | IllegalAccessException exception) {
             throw new IllegalStateException("Unable to create instance of " + concreteClass.getName(), exception);
         }
     }

@@ -13,28 +13,16 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * ========================================================================== */
-package org.usrz.libs.beans;
+package org.usrz.libs.utils.beans;
 
-public abstract class ConstructableBean {
+public abstract class Builder {
 
-    private final String string;
-    private final Number number;
+    public abstract Builder setSomething(int something);
 
-    protected ConstructableBean(String string, Number number) {
-        this.string = string;
-        this.number = number;
-    }
+    public abstract int getSomething();
 
-    public abstract Object getObject();
-
-    public abstract void setObject(Object object);
-
-    public final String getString() {
-        return string;
-    }
-
-    public final Number getNumber() {
-        return number;
+    public void build() {
+        // Nothing...
     }
 
 }

@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * ========================================================================== */
-package org.usrz.libs.beans;
+package org.usrz.libs.utils.beans;
 
-public interface GettableBean {
+public interface BridgeInterface<T> {
 
-    public String getMyValue();
+    public T getGeneric();
 
 }

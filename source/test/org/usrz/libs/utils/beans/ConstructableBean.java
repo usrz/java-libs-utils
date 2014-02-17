@@ -13,19 +13,28 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * ========================================================================== */
-package org.usrz.libs.beans;
+package org.usrz.libs.utils.beans;
 
-public abstract class BridgeClass implements BridgeInterface<String> {
+public abstract class ConstructableBean {
 
-    protected String generic;
+    private final String string;
+    private final Number number;
 
-    @Override
-    public abstract String getGeneric();
+    protected ConstructableBean(String string, Number number) {
+        this.string = string;
+        this.number = number;
+    }
 
-    public abstract void setGeneric(String generic);
+    public abstract Object getObject();
 
-    protected void overrideGeneric(String generic) {
-        this.generic = generic;
+    public abstract void setObject(Object object);
+
+    public final String getString() {
+        return string;
+    }
+
+    public final Number getNumber() {
+        return number;
     }
 
 }

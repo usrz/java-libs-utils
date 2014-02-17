@@ -13,16 +13,10 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * ========================================================================== */
-package org.usrz.libs.beans;
+package org.usrz.libs.utils.beans;
 
-public abstract class Builder {
+public interface GettableBean {
 
-    public abstract Builder setSomething(int something);
-
-    public abstract int getSomething();
-
-    public void build() {
-        // Nothing...
-    }
+    public String getMyValue();
 
 }

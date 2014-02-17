@@ -13,14 +13,19 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * ========================================================================== */
-package org.usrz.libs.beans;
+package org.usrz.libs.utils.beans;
 
-public interface SimpleBean {
+public abstract class BridgeClass implements BridgeInterface<String> {
 
-    public String getKey();
-    public void setKey(String string);
+    protected String generic;
 
-    public int getValue();
-    public void setValue(int value);
+    @Override
+    public abstract String getGeneric();
+
+    public abstract void setGeneric(String generic);
+
+    protected void overrideGeneric(String generic) {
+        this.generic = generic;
+    }
 
 }

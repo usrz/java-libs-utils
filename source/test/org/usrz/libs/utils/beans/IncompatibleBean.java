@@ -13,10 +13,12 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * ========================================================================== */
-package org.usrz.libs.beans;
+package org.usrz.libs.utils.beans;
 
-public interface SettableBean {
+public interface IncompatibleBean {
 
-    public void setMyValue(String value);
+    // Redefine "int" from SimpleBean with "long"
+    public long getValue();
+    public void setValue(long value);
 
 }
