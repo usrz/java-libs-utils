@@ -20,7 +20,6 @@ import java.lang.reflect.Field;
 import org.testng.annotations.Test;
 import org.usrz.libs.logging.Logging;
 import org.usrz.libs.testing.AbstractTest;
-import org.usrz.libs.utils.beans.BeanBuilder;
 
 public class BeanBuilderTest extends AbstractTest {
 
@@ -30,7 +29,7 @@ public class BeanBuilderTest extends AbstractTest {
 
     @Test
     public void testSimpleBean() {
-        final SimpleBean bean = BeanBuilder.newInstance(builder.newClass(SimpleBean.class));
+        final SimpleBean bean = InstanceBuilder.newInstance(builder.newClass(SimpleBean.class));
 
         assertEquals(bean.getKey(), null);
         assertEquals(bean.getValue(), 0);
@@ -44,9 +43,42 @@ public class BeanBuilderTest extends AbstractTest {
     }
 
     @Test
+    public void testPrimitivesBean() {
+        final PrimitivesBean bean = InstanceBuilder.newInstance(builder.newClass(PrimitivesBean.class));
+
+        assertEquals(bean.getBooleanValue(), false);
+        assertEquals(bean.getByteValue(), (byte) 0);
+        assertEquals(bean.getCharValue(), '\u0000');
+        assertEquals(bean.getShortValue(), (short) 0);
+        assertEquals(bean.getIntValue(), 0);
+        assertEquals(bean.getLongValue(), 0L);
+        assertEquals(bean.getFloatValue(), 0.0F);
+        assertEquals(bean.getDoubleValue(), 0.0D);
+
+        bean.setBooleanValue(true);
+        bean.setByteValue((byte) -10);
+        bean.setCharValue('\u1234');
+        bean.setShortValue((short) 23456);
+        bean.setIntValue(12345678);
+        bean.setLongValue(1234567890123456789L);
+        bean.setFloatValue(12.34F);
+        bean.setDoubleValue(1234.567890123456789D);
+
+        assertEquals(bean.getBooleanValue(), true);
+        assertEquals(bean.getByteValue(), (byte) -10);
+        assertEquals(bean.getCharValue(), '\u1234');
+        assertEquals(bean.getShortValue(), (short) 23456);
+        assertEquals(bean.getIntValue(), 12345678);
+        assertEquals(bean.getLongValue(), 1234567890123456789L);
+        assertEquals(bean.getFloatValue(), 12.34F);
+        assertEquals(bean.getDoubleValue(), 1234.567890123456789D);
+
+    }
+
+    @Test
     public void testSettableBean()
     throws Exception {
-        final SettableBean bean = BeanBuilder.newInstance(builder.newClass(SettableBean.class));
+        final SettableBean bean = InstanceBuilder.newInstance(builder.newClass(SettableBean.class));
 
         final Field field = bean.getClass().getDeclaredField("myValue");
 
@@ -65,7 +97,7 @@ public class BeanBuilderTest extends AbstractTest {
     @Test
     public void testGettableBean()
     throws Exception {
-        final GettableBean bean = BeanBuilder.newInstance(builder.newClass(GettableBean.class));
+        final GettableBean bean = InstanceBuilder.newInstance(builder.newClass(GettableBean.class));
 
         final Field field = bean.getClass().getDeclaredField("myValue");
 
@@ -84,7 +116,7 @@ public class BeanBuilderTest extends AbstractTest {
     @Test
     public void testGettableSettableCombined()
     throws Exception {
-        final GettableBean gettable = BeanBuilder.newInstance(builder.newClass(GettableBean.class, SettableBean.class));
+        final GettableBean gettable = InstanceBuilder.newInstance(builder.newClass(GettableBean.class, SettableBean.class));
         final SettableBean settable = (SettableBean) gettable;
 
         assertEquals(gettable.getMyValue(), null);
@@ -97,7 +129,7 @@ public class BeanBuilderTest extends AbstractTest {
     @Test
     public void testBuilderBean()
     throws Exception {
-        final Builder b = BeanBuilder.newInstance(builder.newClass(Builder.class));
+        final Builder b = InstanceBuilder.newInstance(builder.newClass(Builder.class));
 
         assertEquals(b.getSomething(), 0);
         b.setSomething(-1);
@@ -108,7 +140,7 @@ public class BeanBuilderTest extends AbstractTest {
 
     @Test
     public void testBridgeClass() {
-        final BridgeClass bridge = BeanBuilder.newInstance(builder.newClass(BridgeClass.class));
+        final BridgeClass bridge = InstanceBuilder.newInstance(builder.newClass(BridgeClass.class));
 
         assertEquals(bridge.getGeneric(), null);
         bridge.setGeneric("my first value");
@@ -120,7 +152,7 @@ public class BeanBuilderTest extends AbstractTest {
 
     @Test
     public void testBonanza() {
-        final BridgeClass bridge = BeanBuilder.newInstance(builder.newClass(BridgeClass.class, SimpleBean.class, GettableBean.class, SettableBean.class));
+        final BridgeClass bridge = InstanceBuilder.newInstance(builder.newClass(BridgeClass.class, SimpleBean.class, GettableBean.class, SettableBean.class));
 
         assertEquals(bridge.getGeneric(), null);
         bridge.setGeneric("my first value");
@@ -150,14 +182,14 @@ public class BeanBuilderTest extends AbstractTest {
     @Test(expectedExceptions=IllegalStateException.class,
           expectedExceptionsMessageRegExp="^Field \"value\" types mismatch.*")
     public void testIncompatibleInterfaces() {
-        BeanBuilder.newInstance(builder.newClass(SimpleBean.class, IncompatibleBean.class));
+        InstanceBuilder.newInstance(builder.newClass(SimpleBean.class, IncompatibleBean.class));
     }
 
     @Test
     public void testConstructableBean() {
         final Class<ConstructableBean> clazz = builder.newClass(ConstructableBean.class);
 
-        final ConstructableBean bean1 = BeanBuilder.newInstance(clazz, "hello world", new Integer(123));
+        final ConstructableBean bean1 = InstanceBuilder.newInstance(clazz, "hello world", new Integer(123));
         final Object object1 = new Object();
         assertEquals(bean1.getString(), "hello world");
         assertEquals(bean1.getNumber(), new Integer(123));
@@ -165,7 +197,7 @@ public class BeanBuilderTest extends AbstractTest {
         bean1.setObject(object1);
         assertSame(bean1.getObject(), object1);
 
-        final ConstructableBean bean2 = BeanBuilder.newInstance(clazz, "hello world", null);
+        final ConstructableBean bean2 = InstanceBuilder.newInstance(clazz, "hello world", null);
         final Object object2 = new Object();
         assertEquals(bean2.getString(), "hello world");
         assertEquals(bean2.getNumber(), null);
@@ -173,7 +205,7 @@ public class BeanBuilderTest extends AbstractTest {
         bean2.setObject(object2);
         assertSame(bean2.getObject(), object2);
 
-        final ConstructableBean bean3 = BeanBuilder.newInstance(clazz, null, new Integer(123));
+        final ConstructableBean bean3 = InstanceBuilder.newInstance(clazz, null, new Integer(123));
         final Object object3 = new Object();
         assertEquals(bean3.getString(), null);
         assertEquals(bean3.getNumber(), new Integer(123));
@@ -181,7 +213,7 @@ public class BeanBuilderTest extends AbstractTest {
         bean3.setObject(object3);
         assertSame(bean3.getObject(), object3);
 
-        final ConstructableBean bean4 = BeanBuilder.newInstance(clazz, null, null);
+        final ConstructableBean bean4 = InstanceBuilder.newInstance(clazz, null, null);
         final Object object4 = new Object();
         assertEquals(bean4.getString(), null);
         assertEquals(bean4.getNumber(), null);
