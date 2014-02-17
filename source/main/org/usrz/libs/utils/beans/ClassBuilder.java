@@ -29,19 +29,57 @@ import javassist.CtMethod;
 import javassist.Modifier;
 import javassist.NotFoundException;
 
+/**
+ * A {@link ClassBuilder} <em>automagically</em> creates getters and setters.
+ *
+ * <p>Pier says: <quote>"I'm tired of writing the same stupid boiler-place
+ * code, all the time... It's F***ING BORING".</quote></p>
+ *
+ * <p>Getters <b>must</b> conform to the naming convention <code>getFoo()</code>
+ * or <code>isFoo()</code> and (obviously) they can <b>not</b> have
+ * any parameter.</p>
+ *
+ * <p>Setters follow the same rules: names must be <code>setFoo(...)</code>
+ * and they <b>must</b> declare <b>one and only one</b> parameter.</p>
+ *
+ * <p>Setters <b>may</b> return a value, and if so this <b>must</b> be of the
+ * same type of the interface being implemented: this is to allow the
+ * automatic creation of <em>builders</em> or something along the lines of:</p>
+ *
+ * <pre>
+ * public interface MyBuilder {
+ *     public MyBuilder setParameter(String parameter);
+ * }
+ * </pre>
+ *
+ * @author <a href="mailto:pier@usrz.com">Pier Fumagalli</a>
+ */
 public abstract class ClassBuilder {
 
+    /* Logger, use Java for reuse */
     private final Logger logger = Logger.getLogger(this.getClass().getName());
+    /* Random for creating class names */
     private final Random random = new Random();
 
+    /** The Javassist {@link ClassPool} to use specified at construction. */
     protected final ClassPool classPool;
 
     /* ====================================================================== */
 
+    /**
+     * Create a new {@link ClassBuilder} instance.
+     *
+     * <p>The {@link ClassPool} used by the newly created instance will be the
+     * {@linkplain ClassPool#getDefault() default} one.</p>
+     */
     protected ClassBuilder() {
         this(ClassPool.getDefault());
     }
 
+    /**
+     * Create a new {@link ClassBuilder} instance using the specified
+     * {@link ClassPool}.
+     */
     protected ClassBuilder(ClassPool classPool) {
         if (classPool == null) throw new NullPointerException("Null ClassPool");
         this.classPool = classPool;
@@ -49,6 +87,7 @@ public abstract class ClassBuilder {
 
     /* ====================================================================== */
 
+    /* Format a message, extra stuff */
     private String formatMessage(String format, Object[] arguments) {
         final Object[] converted = new Object[arguments.length];
         for (int x = 0; x < arguments.length; x ++) {
@@ -68,30 +107,48 @@ public abstract class ClassBuilder {
         return String.format(format, converted);
     }
 
+    /**
+     * Convenience method used to append debug output.
+     */
     protected void debug(String format, Object... arguments) {
         if (! logger.isLoggable(Level.FINE)) return;
         logger.fine(formatMessage(format, arguments));
     }
 
+    /**
+     * Convenience method used to append trace output.
+     */
     protected void trace(String format, Object... arguments) {
         if (! logger.isLoggable(Level.FINER)) return;
         logger.finer(formatMessage(format, arguments));
     }
 
+    /**
+     * Convenience method used to create {@link IllegalStateException}s.
+     */
     protected IllegalStateException exception(String format, Object... arguments) {
         return new IllegalStateException(formatMessage(format, arguments));
     }
 
     /* ====================================================================== */
 
+    /**
+     * Create the <em>setter</em> method specified, depending on whatever
+     * behavior concrete implementations of this class generate.
+     */
     protected abstract CtMethod createSetter(CtClass concreteClass, CtMethod method, String fieldName)
     throws NotFoundException, CannotCompileException;
 
+    /**
+     * Create the <em>getter</em> method specified, depending on whatever
+     * behavior concrete implementations of this class generate.
+     */
     protected abstract CtMethod createGetter(CtClass concreteClass, CtMethod method, String fieldName)
     throws NotFoundException, CannotCompileException;
 
     /* ====================================================================== */
 
+    /* Getter/Setter method name to field name */
     private String fieldName(CtMethod method, int length) {
         final String methodName = method.getName();
         if (methodName.length() > length) {
@@ -100,7 +157,18 @@ public abstract class ClassBuilder {
         throw exception("Unable to extract field name for method %s", method);
     }
 
-    protected final CtMethod createMethod(CtClass concreteClass, CtMethod method)
+    /**
+     * Create a concrete implementation of the specified <em>method</em>.
+     *
+     * <p>This default implementation only handles two kinds of methods:
+     * getters (like <code>getValue()</code> or <code>isValue()</code>) or
+     * setters (like <code>setValue(&hellip;)</code>) and will delegate creation
+     * to either the {@link #createGetter(CtClass, CtMethod, String)} method
+     * or {@link #createSetter(CtClass, CtMethod, String)}.</p>
+     *
+     * <p>This method can be overridden to allow more method types.</p>
+     */
+    protected CtMethod createMethod(CtClass concreteClass, CtMethod method)
     throws NotFoundException, CannotCompileException {
 
         final String methodName = method.getName();
@@ -119,11 +187,22 @@ public abstract class ClassBuilder {
 
     }
 
+    /**
+     * Create a {@link CtClass} from the specified name and super-class.
+     *
+     * <p>This method can be overridden to allow customization of created
+     * classes before getters and setters are created.</p>
+     */
     protected CtClass createClass(String className, CtClass superClass)
     throws NotFoundException, CannotCompileException {
         return classPool.makeClass(className, superClass);
     }
 
+    /**
+     * Create a {@link CtClass} given an <em>abstract class</em> and a
+     * (possibly empty) list of <em>interfaces</em>, then implement all those
+     * methods left abstract calling {@link #createMethod(CtClass, CtMethod)}.
+     */
     protected final CtClass createClass(Class<?> abstractClass, Class<?>[] interfaces)
     throws NotFoundException, CannotCompileException {
 
@@ -244,12 +323,22 @@ public abstract class ClassBuilder {
 
     /* ====================================================================== */
 
+    /* Convenience */
     private static final Class<?>[] EMPTY_INTERFACES = { };
 
+    /**
+     * Create a concrete version of the specified
+     * {@linkplain Class abstract class} (or interface).
+     */
     public final <T> Class<T> newClass(Class<?> abstractClass) {
         return this.newClass(abstractClass, EMPTY_INTERFACES);
     }
 
+    /**
+     * Create a concrete version of the specified
+     * {@linkplain Class abstract class} (or interface), also implementing
+     * all the specified extra interfaces.
+     */
     @SuppressWarnings("unchecked")
     public final <T> Class<T> newClass(Class<?> abstractClass, Class<?>... interfaces) {
         if (abstractClass == null) throw new NullPointerException("Null class to implement");
@@ -261,7 +350,5 @@ public abstract class ClassBuilder {
             throw new IllegalStateException("Unable to create implementation of " + abstractClass.getName(), exception);
         }
     }
-
-    /* ====================================================================== */
 
 }

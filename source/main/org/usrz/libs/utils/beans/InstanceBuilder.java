@@ -20,22 +20,52 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * A <em>convenience</em> utility to create instances from {@link Class}es.
+ *
+ * <p>Please note that this is <em>really</em> basic (see the description of
+ * {@linkplain #newInstance(Class, Object...) parameterized construction} for
+ * ideas) and should be used in only controlled cases. Much more refined (and
+ * tested) frameworks like Google Guice are available for instantiation.</p>
+ *
+ * @author <a href="mailto:pier@usrz.com">Pier Fumagalli</a>
+ */
 public class InstanceBuilder {
 
+    /* Logger */
     private static final Logger logger = Logger.getLogger(InstanceBuilder.class.getName());
 
     /* ====================================================================== */
 
+    /* Foo, go away */
     private InstanceBuilder() {
         throw new IllegalStateException("Do not construct");
     }
 
     /* ====================================================================== */
 
+    /**
+     * Create a new instance of the specified {@link Class} using its specified
+     * <em>zero-arguments</em> constructor.
+     *
+     * <p>Any exception thrown by the Java reflection layer will be wrapped in
+     * an <em>unchecked</em> exception.
+     */
     public static <T> T newInstance(Class<? extends T> concreteClass) {
         return newInstance(concreteClass, (Object[]) null);
     }
 
+    /**
+     * Create a new instance of the specified {@link Class} trying to discover
+     * the correct constructor from the parameters specified.
+     *
+     * <p>Note that the algorithm of this method is quite basic, <b>null</b>
+     * values are ignored, and as long as parameters are <em>assignable</em>
+     * to constructor parameter classes, constructors will be matched.</p>
+     *
+     * <p>Any exception thrown by the Java reflection layer will be wrapped in
+     * an <em>unchecked</em> exception.
+     */
     @SuppressWarnings("unchecked")
     public static <T> T newInstance(Class<? extends T> concreteClass, Object... parameters) {
 

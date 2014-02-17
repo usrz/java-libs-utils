@@ -25,33 +25,19 @@ import javassist.NotFoundException;
 import javassist.bytecode.analysis.Type;
 
 /**
- * A {@link BeanBuilder} <em>automagically</em> creates bean getters, setters
- * and (private) fields to any class.
+ * A {@link BeanBuilder} is a {@link ClassBuilder} creating getters and setters
+ * methods backed by (private) fields..
  *
- * <p>Pier says: <quote>"I'm tired of writing the same stupid boiler-place
- * code, all the time... It's F***ING BORING".</quote></p>
- *
- * <p>Getters <b>must</b> conform to the naming convention <code>getFoo()</code>
+ * <p>Getter <b>must</b> conform to the naming convention <code>getFoo()</code>
  * or <code>isFoo()</code>: their return type <b>must</b> be the precisely the
  * same type of the field <code>foo</code> (if this is declared already in an
  * abstract class). If the field is not declared or inherited, one (private)
- * will be automatically created. Obviously, getters can <b>not</b> have
- * any parameter.</p>
+ * will be automatically created.</p>
  *
  * <p>Setters follow the same rules: names must be <code>setFoo(...)</code>
  * and they <b>must</b> declare <b>one and only one</b> parameter, of precisely
  * the same type of the field <code>foo</code> (same rules that apply to
  * getters apply here).</p>
- *
- * <p>Setters <b>may</b> return a value, and if so this <b>must</b> be of the
- * same type of the interface being implemented: this is to allow the
- * automatic creation of <em>builders</em> or something along the lines of:</p>
- *
- * <pre>
- * public interface MyBuilder {
- *     public MyBuilder setParameter(String parameter);
- * }
- * </pre>
  *
  * <p>Note that because of the <b>strict</b> requirements of getter, setter and
  * field types, it is therefore <b>impossible</b> to have constructs like:</p>
@@ -70,16 +56,30 @@ import javassist.bytecode.analysis.Type;
  */
 public class BeanBuilder extends ClassBuilder {
 
+    /**
+     * Create a new {@link BeanBuilder}.
+     *
+     * @see ClassBuilder#ClassBuilder()
+     */
     public BeanBuilder() {
         super();
     }
 
+    /**
+     * Create a new {@link BeanBuilder} using the specifed {@link ClassPool}.
+     *
+     * @see ClassBuilder#ClassBuilder(ClassPool)
+     */
     public BeanBuilder(ClassPool classPool) {
         super(classPool);
     }
 
     /* ====================================================================== */
 
+    /**
+     * Create a setter method and (if not available) a related field to store
+     * the value into.
+     */
     @Override
     protected CtMethod createSetter(CtClass concreteClass, CtMethod method, String fieldName)
     throws NotFoundException, CannotCompileException {
@@ -132,6 +132,10 @@ public class BeanBuilder extends ClassBuilder {
         return setter;
     }
 
+    /**
+     * Create a setter gethod and (if not available) a related field to gather
+     * the value from.
+     */
     @Override
     protected CtMethod createGetter(CtClass concreteClass, CtMethod method, String fieldName)
     throws NotFoundException, CannotCompileException {

@@ -17,8 +17,22 @@ package org.usrz.libs.utils.beans;
 
 import java.util.Map;
 
+/**
+ * A simple interface implemented by all classes created by a
+ * {@link MapperBuilder} to retrieve the various setter properties.
+ *
+ * <p>Note that the returned {@link Map} is <b>not</b> a copy, henceforth
+ * any change made on the {@link Map} will be reflected in the getter
+ * values.</p>
+ *
+ * @author <a href="mailto:pier@usrz.com">Pier Fumagalli</a>
+ */
 public interface Mapper {
 
+    /**
+     * Get the {@link Map} containing all the properties of a <em>bean</em>
+     * created by a {@link MapperBuilder}.
+     */
     public Map<String, Object> mappedProperties();
 
 }

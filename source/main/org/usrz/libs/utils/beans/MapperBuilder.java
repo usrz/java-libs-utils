@@ -15,6 +15,8 @@
  * ========================================================================== */
 package org.usrz.libs.utils.beans;
 
+import java.util.Map;
+
 import javassist.CannotCompileException;
 import javassist.ClassPool;
 import javassist.CtClass;
@@ -24,16 +26,37 @@ import javassist.Modifier;
 import javassist.NotFoundException;
 import javassist.bytecode.analysis.Type;
 
+/**
+ * A {@link MapperBuilder} in a similar fashion to a {@link BeanBuilder} but
+ * stores the values from setters and to getters in a {@link Map} rather than
+ * fields.
+ *
+ * <p>All classes created by this implement the {@link Mapper} interface, and
+ * its {@link Mapper#mappedProperties() mappedProperties()} method can be used
+ * to get the underlying {@link Map} instance used to store properties.</p>
+ *
+ * @author <a href="mailto:pier@usrz.com">Pier Fumagalli</a>
+ */
 public class MapperBuilder extends ClassBuilder {
 
     /* The BeanBuilder we'll use to create the "mappedProperties()" getter */
     private final BeanBuilder beanBuilder;
 
+    /**
+     * Create a new {@link MapperBuilder}.
+     *
+     * @see ClassBuilder#ClassBuilder()
+     */
     public MapperBuilder() {
         super();
         beanBuilder = new BeanBuilder(classPool);
     }
 
+    /**
+     * Create a new {@link MapperBuilder} using the specifed {@link ClassPool}.
+     *
+     * @see ClassBuilder#ClassBuilder(ClassPool)
+     */
     public MapperBuilder(ClassPool classPool) {
         super(classPool);
         beanBuilder = new BeanBuilder(this.classPool);
@@ -41,6 +64,28 @@ public class MapperBuilder extends ClassBuilder {
 
     /* ====================================================================== */
 
+    /**
+     * Overriding {@link ClassBuilder}'s own
+     * {@link ClassBuilder#createMethod(CtClass, CtMethod)} method to support
+     * the <em>non-standard</em>
+     * {@link Mapper#mappedProperties() mappedProperties()} method.
+     */
+    @Override
+    protected final CtMethod createMethod(CtClass concreteClass, CtMethod method)
+    throws NotFoundException, CannotCompileException {
+        if (method.getName().equals("mappedProperties") &&
+            method.getReturnType().getName().equals("java.util.Map")) {
+            return concreteClass.getDeclaredMethod("mappedProperties", new CtClass[0]);
+        }
+        return super.createMethod(concreteClass, method);
+    }
+
+    /**
+     * Overriding {@link ClassBuilder}'s own
+     * {@link ClassBuilder#createClass(String, CtClass)} method to add the
+     * extra {@link Mapper} interface, its initialization code, and the
+     * {@link Mapper#mappedProperties() mappedProperties()} method.
+     */
     @Override
     protected CtClass createClass(String className, CtClass superClass)
     throws NotFoundException, CannotCompileException {
@@ -64,6 +109,10 @@ public class MapperBuilder extends ClassBuilder {
         return concreteClass;
     }
 
+    /**
+     * Create a setter method backed by our
+     * {@linkplain Mapper#mappedProperties() map}.
+     */
     @Override
     protected CtMethod createSetter(CtClass concreteClass, CtMethod method, String fieldName)
     throws NotFoundException, CannotCompileException {
@@ -123,6 +172,10 @@ public class MapperBuilder extends ClassBuilder {
 
     }
 
+    /**
+     * Create a getter method backed by our
+     * {@linkplain Mapper#mappedProperties() map}.
+     */
     @Override
     protected CtMethod createGetter(CtClass concreteClass, CtMethod method, String fieldName)
     throws NotFoundException, CannotCompileException {
@@ -176,7 +229,4 @@ public class MapperBuilder extends ClassBuilder {
         return getter;
 
     }
-
-    /* ====================================================================== */
-
 }
