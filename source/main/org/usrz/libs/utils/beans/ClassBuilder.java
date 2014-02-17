@@ -139,7 +139,7 @@ public abstract class ClassBuilder {
 
             /* If the class to implement is an interface, just extend Object */
             final CtClass objectClass = classPool.getCtClass(Object.class.getName());
-            concreteClass = this.createClass(className, objectClass);
+            concreteClass = createClass(className, objectClass);
 
             /* Remember to add the missing methods */
             interfacesSet.add(abstractClass);
@@ -147,7 +147,7 @@ public abstract class ClassBuilder {
 
             /* If the class to implement is an (?) abstract, extend it */
             final CtClass superClass = classPool.getCtClass(abstractClass.getName());
-            concreteClass = this.createClass(className, superClass);
+            concreteClass = createClass(className, superClass);
 
             /* Instrument all abstract methods from the super class */
             for (CtMethod method: superClass.getMethods()) {

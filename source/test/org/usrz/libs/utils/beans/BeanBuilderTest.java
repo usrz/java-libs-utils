@@ -29,7 +29,7 @@ public class BeanBuilderTest extends AbstractTest {
 
     @Test
     public void testSimpleBean() {
-        final SimpleBean bean = InstanceBuilder.newInstance(builder.newClass(SimpleBean.class));
+        final SimpleBean bean = InstanceBuilder.newInstance(builder.<SimpleBean>newClass(SimpleBean.class));
 
         assertEquals(bean.getKey(), null);
         assertEquals(bean.getValue(), 0);
@@ -44,7 +44,7 @@ public class BeanBuilderTest extends AbstractTest {
 
     @Test
     public void testPrimitivesBean() {
-        final PrimitivesBean bean = InstanceBuilder.newInstance(builder.newClass(PrimitivesBean.class));
+        final PrimitivesBean bean = InstanceBuilder.newInstance(builder.<PrimitivesBean>newClass(PrimitivesBean.class));
 
         assertEquals(bean.getBooleanValue(), false);
         assertEquals(bean.getByteValue(), (byte) 0);
@@ -78,7 +78,7 @@ public class BeanBuilderTest extends AbstractTest {
     @Test
     public void testSettableBean()
     throws Exception {
-        final SettableBean bean = InstanceBuilder.newInstance(builder.newClass(SettableBean.class));
+        final SettableBean bean = InstanceBuilder.newInstance(builder.<SettableBean>newClass(SettableBean.class));
 
         final Field field = bean.getClass().getDeclaredField("myValue");
 
@@ -97,7 +97,7 @@ public class BeanBuilderTest extends AbstractTest {
     @Test
     public void testGettableBean()
     throws Exception {
-        final GettableBean bean = InstanceBuilder.newInstance(builder.newClass(GettableBean.class));
+        final GettableBean bean = InstanceBuilder.newInstance(builder.<GettableBean>newClass(GettableBean.class));
 
         final Field field = bean.getClass().getDeclaredField("myValue");
 
@@ -116,7 +116,7 @@ public class BeanBuilderTest extends AbstractTest {
     @Test
     public void testGettableSettableCombined()
     throws Exception {
-        final GettableBean gettable = InstanceBuilder.newInstance(builder.newClass(GettableBean.class, SettableBean.class));
+        final GettableBean gettable = InstanceBuilder.newInstance(builder.<GettableBean>newClass(GettableBean.class, SettableBean.class));
         final SettableBean settable = (SettableBean) gettable;
 
         assertEquals(gettable.getMyValue(), null);
@@ -129,7 +129,7 @@ public class BeanBuilderTest extends AbstractTest {
     @Test
     public void testBuilderBean()
     throws Exception {
-        final Builder b = InstanceBuilder.newInstance(builder.newClass(Builder.class));
+        final Builder b = InstanceBuilder.newInstance(builder.<Builder>newClass(Builder.class));
 
         assertEquals(b.getSomething(), 0);
         b.setSomething(-1);
@@ -140,7 +140,7 @@ public class BeanBuilderTest extends AbstractTest {
 
     @Test
     public void testBridgeClass() {
-        final BridgeClass bridge = InstanceBuilder.newInstance(builder.newClass(BridgeClass.class));
+        final BridgeClass bridge = InstanceBuilder.newInstance(builder.<BridgeClass>newClass(BridgeClass.class));
 
         assertEquals(bridge.getGeneric(), null);
         bridge.setGeneric("my first value");
@@ -152,7 +152,7 @@ public class BeanBuilderTest extends AbstractTest {
 
     @Test
     public void testBonanza() {
-        final BridgeClass bridge = InstanceBuilder.newInstance(builder.newClass(BridgeClass.class, SimpleBean.class, GettableBean.class, SettableBean.class));
+        final BridgeClass bridge = InstanceBuilder.newInstance(builder.<BridgeClass>newClass(BridgeClass.class, SimpleBean.class, GettableBean.class, SettableBean.class));
 
         assertEquals(bridge.getGeneric(), null);
         bridge.setGeneric("my first value");

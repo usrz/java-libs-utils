@@ -32,12 +32,12 @@ public class InstanceBuilder {
 
     /* ====================================================================== */
 
-    public static <T> T newInstance(Class<?> concreteClass) {
+    public static <T> T newInstance(Class<? extends T> concreteClass) {
         return newInstance(concreteClass, (Object[]) null);
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> T newInstance(Class<?> concreteClass, Object... parameters) {
+    public static <T> T newInstance(Class<? extends T> concreteClass, Object... parameters) {
 
         final Class<?>[] classes = new Class<?>[parameters == null ? 0 : parameters.length];
         if (parameters == null) parameters = new Object[0];
