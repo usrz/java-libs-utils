@@ -120,8 +120,9 @@ public class BeanBuilderTest extends AbstractTest {
         final SettableBean settable = (SettableBean) gettable;
 
         assertEquals(gettable.getMyValue(), null);
-        settable.setMyValue("my wonderful value");
-        assertEquals(gettable.getMyValue(), "my wonderful value");
+        final String string = "my wonderful value";
+        settable.setMyValue(string);
+        assertSame(gettable.getMyValue(), string);
 
     }
 
@@ -132,7 +133,8 @@ public class BeanBuilderTest extends AbstractTest {
         final Builder b = InstanceBuilder.newInstance(builder.<Builder>newClass(Builder.class));
 
         assertEquals(b.getSomething(), 0);
-        b.setSomething(-1);
+        final Builder b2 = b.setSomething(-1);
+        assertSame(b2, b);
         assertEquals(b.getSomething(), -1);
         b.build(); // should not throw
 
