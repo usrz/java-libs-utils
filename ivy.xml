@@ -9,9 +9,9 @@
   </configurations>
 
   <publications>
-      <artifact name="beans" type="bin" ext="jar" conf="default"/>
-      <artifact name="beans" type="src" ext="zip" conf="default"/>
-      <artifact name="beans" type="doc" ext="zip" conf="default"/>
+      <artifact name="utils" type="bin" ext="jar" conf="default"/>
+      <artifact name="utils" type="src" ext="zip" conf="default"/>
+      <artifact name="utils" type="doc" ext="zip" conf="default"/>
   </publications>
 
   <dependencies>
