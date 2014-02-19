@@ -230,9 +230,9 @@ public class IntrospectionDescriptor<T> {
         for (Map.Entry<IntrospectorKey, ReadersAndWriters> entry: readersAndWriters.entrySet()) {
             output.println("  " + entry.getKey());
             for (IntrospectorReader reader: entry.getValue().readers)
-                output.println("  <<<  " + reader);
+                output.println("    <--  " + reader);
             for (IntrospectorWriter writer: entry.getValue().writers)
-                output.println("  >>>  " + writer);
+                output.println("    -->  " + writer);
         }
     }
 
