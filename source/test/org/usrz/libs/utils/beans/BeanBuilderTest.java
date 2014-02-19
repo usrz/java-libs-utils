@@ -18,12 +18,9 @@ package org.usrz.libs.utils.beans;
 import java.lang.reflect.Field;
 
 import org.testng.annotations.Test;
-import org.usrz.libs.logging.Logging;
 import org.usrz.libs.testing.AbstractTest;
 
 public class BeanBuilderTest extends AbstractTest {
-
-    static { Logging.init(); }
 
     private final BeanBuilder builder = new BeanBuilder();
 
