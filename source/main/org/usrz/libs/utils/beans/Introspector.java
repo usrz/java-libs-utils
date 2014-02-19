@@ -24,6 +24,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -103,6 +104,8 @@ public class Introspector {
                 /* This could be a potential getter */
                 final String property = propertyNameFromMethod(method);
                 final Set<Annotation> annotations = findMethodAnnotations(clazz, method);
+                if (notIntrospected(annotations)) continue;
+
 
                 /* Remember the method with *all* its annotations */
                 descriptor.addReader(property, null, new IntrospectorMethodReader(method), false);
@@ -117,6 +120,7 @@ public class Introspector {
                 /* This could be a potential setter */
                 final String property = propertyNameFromMethod(method);
                 final Set<Annotation> annotations = findMethodAnnotations(clazz, method);
+                if (notIntrospected(annotations)) continue;
 
                 /* Remember the method with *all* its annotations */
                 descriptor.addWriter(property, null, new IntrospectorMethodWriter(method), false);
@@ -142,11 +146,15 @@ public class Introspector {
             if (field.getType().equals(Void.class) ||
                 field.getType().equals(void.class)) continue;
 
+            /* Check if this field is annotated with @NotIntrospected */
+            final Annotation[] annotations = field.getAnnotations();
+            if (notIntrospected(annotations)) continue;
+
             /* Remember the field with *all* its annotations */
             final String name = field.getName();
             /*         */ descriptor.addReader(name, null, new IntrospectorFieldReader(field), true);
             if (notFinal) descriptor.addWriter(name, null, new IntrospectorFieldWriter(field), true);
-            for (Annotation annotation: field.getAnnotations()) {
+            for (Annotation annotation: annotations) {
                 /*         */ descriptor.addReader(name, annotation, new IntrospectorFieldReader(field), true);
                 if (notFinal) descriptor.addWriter(name, annotation, new IntrospectorFieldWriter(field), true);
             }
@@ -159,6 +167,17 @@ public class Introspector {
     /* ====================================================================== */
     /* UTILITY METHODS                                                        */
     /* ====================================================================== */
+
+    private static boolean notIntrospected(Annotation[] annotations) {
+        return notIntrospected(Arrays.asList(annotations));
+    }
+
+    private static boolean notIntrospected(Collection<? extends Annotation> annotations) {
+        for (Annotation annotation: annotations)
+            if (NotIntrospected.class.isAssignableFrom(annotation.annotationType()))
+                return true;
+        return false;
+    }
 
     private static boolean shouldSkip(int modifiers, int access) {
         if (Modifier.isAbstract(modifiers)) return true;
