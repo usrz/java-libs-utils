@@ -265,14 +265,20 @@ public class IntrospectedProperty<T> {
 
         /* String assignment */
         final String string = value.toString();
+        final String normalized = string.toLowerCase().trim();
 
         /* Boolean from string? */
-        final String booleanString = string.toLowerCase().trim();
-        if (booleanString.equals("true") || booleanString.equals("false")) {
-            final Boolean booleanValue = Boolean.valueOf(booleanString);
+        if (normalized.equals("true") || normalized.equals("false")) {
+            final Boolean booleanValue = Boolean.valueOf(normalized);
             if (writeOrCast(instance, booleanValue)) return;
             if (writePrimitive(instance, booleanValue)) return;
         }
+
+        /* Number from string? */
+        try { if (writeNumber(instance, Long.parseLong(normalized))) return;
+        } catch (NumberFormatException exception1) {
+        try { if (writeNumber(instance, Double.parseDouble(normalized))) return;
+        } catch (NumberFormatException exception2) { /* Nada */ } }
 
         /* String value */
         if (writeOrCast(instance, string)) return;
