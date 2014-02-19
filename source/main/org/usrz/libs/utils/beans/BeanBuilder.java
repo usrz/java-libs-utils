@@ -81,7 +81,7 @@ public class BeanBuilder extends ClassBuilder {
      * the value into.
      */
     @Override
-    protected CtMethod createSetter(CtClass concreteClass, CtMethod method, String fieldName)
+    CtMethod createSetter(CtClass concreteClass, CtMethod method, String fieldName)
     throws NotFoundException, CannotCompileException {
 
         trace("Instrumenting setter %s", method);
@@ -137,7 +137,7 @@ public class BeanBuilder extends ClassBuilder {
      * the value from.
      */
     @Override
-    protected CtMethod createGetter(CtClass concreteClass, CtMethod method, String fieldName)
+    CtMethod createGetter(CtClass concreteClass, CtMethod method, String fieldName)
     throws NotFoundException, CannotCompileException {
 
         trace("Instrumenting getter %s", method);

@@ -72,7 +72,7 @@ public abstract class ClassBuilder {
      * <p>The {@link ClassPool} used by the newly created instance will be the
      * {@linkplain ClassPool#getDefault() default} one.</p>
      */
-    protected ClassBuilder() {
+    ClassBuilder() {
         this(ClassPool.getDefault());
     }
 
@@ -80,7 +80,7 @@ public abstract class ClassBuilder {
      * Create a new {@link ClassBuilder} instance using the specified
      * {@link ClassPool}.
      */
-    protected ClassBuilder(ClassPool classPool) {
+    ClassBuilder(ClassPool classPool) {
         if (classPool == null) throw new NullPointerException("Null ClassPool");
         this.classPool = classPool;
     }
@@ -110,7 +110,7 @@ public abstract class ClassBuilder {
     /**
      * Convenience method used to append debug output.
      */
-    protected void debug(String format, Object... arguments) {
+    void debug(String format, Object... arguments) {
         if (! logger.isLoggable(Level.FINE)) return;
         logger.fine(formatMessage(format, arguments));
     }
@@ -118,7 +118,7 @@ public abstract class ClassBuilder {
     /**
      * Convenience method used to append trace output.
      */
-    protected void trace(String format, Object... arguments) {
+    void trace(String format, Object... arguments) {
         if (! logger.isLoggable(Level.FINER)) return;
         logger.finer(formatMessage(format, arguments));
     }
@@ -126,7 +126,7 @@ public abstract class ClassBuilder {
     /**
      * Convenience method used to create {@link IllegalStateException}s.
      */
-    protected IllegalStateException exception(String format, Object... arguments) {
+    IllegalStateException exception(String format, Object... arguments) {
         return new IllegalStateException(formatMessage(format, arguments));
     }
 
@@ -136,14 +136,14 @@ public abstract class ClassBuilder {
      * Create the <em>setter</em> method specified, depending on whatever
      * behavior concrete implementations of this class generate.
      */
-    protected abstract CtMethod createSetter(CtClass concreteClass, CtMethod method, String fieldName)
+    abstract CtMethod createSetter(CtClass concreteClass, CtMethod method, String fieldName)
     throws NotFoundException, CannotCompileException;
 
     /**
      * Create the <em>getter</em> method specified, depending on whatever
      * behavior concrete implementations of this class generate.
      */
-    protected abstract CtMethod createGetter(CtClass concreteClass, CtMethod method, String fieldName)
+    abstract CtMethod createGetter(CtClass concreteClass, CtMethod method, String fieldName)
     throws NotFoundException, CannotCompileException;
 
     /* ====================================================================== */
@@ -168,7 +168,7 @@ public abstract class ClassBuilder {
      *
      * <p>This method can be overridden to allow more method types.</p>
      */
-    protected CtMethod createMethod(CtClass concreteClass, CtMethod method)
+    CtMethod createMethod(CtClass concreteClass, CtMethod method)
     throws NotFoundException, CannotCompileException {
 
         final String methodName = method.getName();
@@ -193,7 +193,7 @@ public abstract class ClassBuilder {
      * <p>This method can be overridden to allow customization of created
      * classes before getters and setters are created.</p>
      */
-    protected CtClass createClass(String className, CtClass superClass)
+    CtClass createClass(String className, CtClass superClass)
     throws NotFoundException, CannotCompileException {
         return classPool.makeClass(className, superClass);
     }
@@ -203,7 +203,7 @@ public abstract class ClassBuilder {
      * (possibly empty) list of <em>interfaces</em>, then implement all those
      * methods left abstract calling {@link #createMethod(CtClass, CtMethod)}.
      */
-    protected final CtClass createClass(Class<?> abstractClass, Class<?>[] interfaces)
+    final CtClass createClass(Class<?> abstractClass, Class<?>[] interfaces)
     throws NotFoundException, CannotCompileException {
 
         /* Normalize the interfaces */

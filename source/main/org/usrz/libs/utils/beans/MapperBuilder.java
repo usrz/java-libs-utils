@@ -71,7 +71,7 @@ public class MapperBuilder extends ClassBuilder {
      * {@link Mapper#mappedProperties() mappedProperties()} method.
      */
     @Override
-    protected final CtMethod createMethod(CtClass concreteClass, CtMethod method)
+    final CtMethod createMethod(CtClass concreteClass, CtMethod method)
     throws NotFoundException, CannotCompileException {
         if (method.getName().equals("mappedProperties") &&
             method.getReturnType().getName().equals("java.util.Map")) {
@@ -87,7 +87,7 @@ public class MapperBuilder extends ClassBuilder {
      * {@link Mapper#mappedProperties() mappedProperties()} method.
      */
     @Override
-    protected CtClass createClass(String className, CtClass superClass)
+    CtClass createClass(String className, CtClass superClass)
     throws NotFoundException, CannotCompileException {
         final CtClass concreteClass = super.createClass(className, superClass);
 
@@ -114,7 +114,7 @@ public class MapperBuilder extends ClassBuilder {
      * {@linkplain Mapper#mappedProperties() map}.
      */
     @Override
-    protected CtMethod createSetter(CtClass concreteClass, CtMethod method, String fieldName)
+    CtMethod createSetter(CtClass concreteClass, CtMethod method, String fieldName)
     throws NotFoundException, CannotCompileException {
 
         trace("Instrumenting setter %s", method);
@@ -177,7 +177,7 @@ public class MapperBuilder extends ClassBuilder {
      * {@linkplain Mapper#mappedProperties() map}.
      */
     @Override
-    protected CtMethod createGetter(CtClass concreteClass, CtMethod method, String fieldName)
+    CtMethod createGetter(CtClass concreteClass, CtMethod method, String fieldName)
     throws NotFoundException, CannotCompileException {
 
         trace("Instrumenting getter %s", method);
