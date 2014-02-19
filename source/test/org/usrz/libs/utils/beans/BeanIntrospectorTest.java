@@ -15,6 +15,10 @@
  * ========================================================================== */
 package org.usrz.libs.utils.beans;
 
+import static org.usrz.libs.utils.beans.InstanceBuilder.newInstance;
+
+import java.util.Map;
+
 import org.testng.annotations.Test;
 import org.usrz.libs.testing.AbstractTest;
 
@@ -29,7 +33,7 @@ public class BeanIntrospectorTest extends AbstractTest {
 
         final Class<AnnotatedBean> clazz = builder.newClass(AnnotatedBean.class, SimpleBean.class);
         final IntrospectionDescriptor<AnnotatedBean> descriptor = introspector.getDescriptor(clazz);
-        final AnnotatedBean annotated = InstanceBuilder.newInstance(clazz);
+        final AnnotatedBean annotated = newInstance(clazz);
         final SimpleBean simple = (SimpleBean) annotated;
 
         /* Show off what we've got */
@@ -70,6 +74,109 @@ public class BeanIntrospectorTest extends AbstractTest {
         annotatedField.write(annotated, "76543"); // write a string (conversion 2)
         assertEquals(annotatedField.read(annotated), "the value is 76543.0");
 
+        /* See what we get when requesting "SimpleAnnotation" annotated fields */
+        final Map<SimpleAnnotation, IntrospectedProperty<AnnotatedBean>> simplyAnnotated = descriptor.getProperties(SimpleAnnotation.class);
+        assertEquals(simplyAnnotated.size(), 1);
+        for (Map.Entry<SimpleAnnotation, IntrospectedProperty<AnnotatedBean>> entry: simplyAnnotated.entrySet()) {
+            assertEquals(entry.getKey().annotationType(), SimpleAnnotation.class);
+            assertTrue(entry.getValue().canRead());
+            assertTrue(entry.getValue().canWrite());
+            assertNull(entry.getValue().read(annotated));
+
+            /* Write "object" get "string" */
+            final Object object = new Object();
+            entry.getValue().write(annotated, object);
+            assertEquals(entry.getValue().read(annotated), object.toString());
+        }
     }
 
+    @Test
+    public void testPrimitives()
+    throws Exception {
+        /* Do something different, introspection on interface, rather than class */
+        final PrimitivesBean instance = newInstance(builder.<PrimitivesBean>newClass(PrimitivesBean.class));
+        final IntrospectionDescriptor<PrimitivesBean> descriptor = introspector.getDescriptor(PrimitivesBean.class);
+
+        /* Show off what we've got */
+        descriptor.describe(System.err);
+
+        /* Start simple: booleans! */
+        final IntrospectedProperty<PrimitivesBean> booleanProperty = descriptor.getProperty("booleanValue");
+        assertFalse(booleanProperty.read(instance, Boolean.class)); // initially false
+        booleanProperty.write(instance, "   tRUe   "); // some space, mixed case...
+        assertTrue(booleanProperty.read(instance, Boolean.class));
+        booleanProperty.write(instance, " false " ); // write false, get string
+        assertEquals(booleanProperty.read(instance, String.class), "false");
+        booleanProperty.write(instance, true); // write false, get string
+        assertEquals(booleanProperty.read(instance, String.class), "true");
+
+        /* Array of numbers to iterate on */
+        final Number[] values = new Number[] { new Byte((byte)-12),
+                                               new Short((short) 789),
+                                               new Integer(68438239),
+                                               new Long(32905954670929L),
+                                               new Float(645986754.123),
+                                               new Double(893475348.905678D) };
+
+        /* All the number properties (also have "char" and "boolean" there) */
+        final String[] propertyNames = new String[] { "byteValue",
+                                                      "shortValue",
+                                                      "intValue",
+                                                      "longValue",
+                                                      "floatValue",
+                                                      "doubleValue" };
+
+        /* Loop! */
+        for (String propertyName: propertyNames) {
+            final IntrospectedProperty<PrimitivesBean> property = descriptor.getProperty(propertyName);
+            assertEquals(propertyName, property.getName());
+
+            /* Initial value should *ALWAYS* be zero */
+            assertEquals(property.read(instance, Number.class).intValue(), 0);
+
+            /* Go for the numbers */
+            for (Number number: values) {
+
+                /* We'll loose precision, need to convert the number */
+                final Number converted;
+                switch (propertyName) {
+                    case "byteValue"  : converted = new Byte   (number.byteValue())   ; break;
+                    case "shortValue" : converted = new Short  (number.shortValue())  ; break;
+                    case "intValue"   : converted = new Integer(number.intValue())    ; break;
+                    case "longValue"  : converted = new Long   (number.longValue())   ; break;
+                    case "floatValue" : converted = new Float  (number.floatValue())  ; break;
+                    case "doubleValue": converted = new Double (number.doubleValue()) ; break;
+                    default: throw new IllegalStateException("Wrong property " + propertyName);
+                }
+
+                /* First with numbers! */
+                property.write(instance, number);
+                try {
+                    assertEquals(property.read(instance, Byte.class),    new Byte   (converted.byteValue()),   "to byte");
+                    assertEquals(property.read(instance, Short.class),   new Short  (converted.shortValue()),  "to short");
+                    assertEquals(property.read(instance, Integer.class), new Integer(converted.intValue()),    "to int");
+                    assertEquals(property.read(instance, Long.class),    new Long   (converted.longValue()),   "to long");
+                    assertEquals(property.read(instance, Float.class),   new Float  (converted.floatValue()),  "to float");
+                    assertEquals(property.read(instance, Double.class),  new Double (converted.doubleValue()), "to double");
+
+                } catch (AssertionError error) {
+                    fail("Processing conversion from " + number.getClass().getSimpleName() + ": " + number + " (converted=" + converted + ") " + error.getMessage(), error);
+                }
+
+                /* Then with strings, we write the "converted" value as we only parse long or double when writing */
+                property.write(instance, converted.toString());
+                try {
+                    assertEquals(property.read(instance, Byte.class),    new Byte   (converted.byteValue()),   "to byte");
+                    assertEquals(property.read(instance, Short.class),   new Short  (converted.shortValue()),  "to short");
+                    assertEquals(property.read(instance, Integer.class), new Integer(converted.intValue()),    "to int");
+                    assertEquals(property.read(instance, Long.class),    new Long   (converted.longValue()),   "to long");
+                    assertEquals(property.read(instance, Float.class),   new Float  (converted.floatValue()),  "to float");
+                    assertEquals(property.read(instance, Double.class),  new Double (converted.doubleValue()), "to double");
+
+                } catch (AssertionError error) {
+                    fail("Processing conversion from String representation of " + converted.getClass().getSimpleName() + ": " + number + " (converted=" + converted + ") " + error.getMessage(), error);
+                }
+            }
+        }
+    }
 }
