@@ -15,6 +15,7 @@
  * ========================================================================== */
 package org.usrz.libs.utils.beans;
 
+import java.io.PrintStream;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -58,8 +59,6 @@ public class IntrospectionDescriptor<T> {
             Map<Annotation, IntrospectedProperty<T>> properties = byAnnotation.get(annotationClass);
             if (properties == null) byAnnotation.put(annotationClass, properties = new HashMap<Annotation, IntrospectedProperty<T>>());
             properties.put(key.getAnnotation(), property);
-
-            System.err.println(byAnnotation);
         }
 
         sealed = true;
@@ -226,14 +225,14 @@ public class IntrospectionDescriptor<T> {
         return true;
     }
 
-    protected void describe() {
-        System.err.println(type.getName());
+    void describe(PrintStream output) {
+        output.println(type.getName());
         for (Map.Entry<IntrospectorKey, ReadersAndWriters> entry: readersAndWriters.entrySet()) {
-            System.err.println("  " + entry.getKey());
+            output.println("  " + entry.getKey());
             for (IntrospectorReader reader: entry.getValue().readers)
-                System.err.println("  <<<  " + reader);
+                output.println("  <<<  " + reader);
             for (IntrospectorWriter writer: entry.getValue().writers)
-                System.err.println("  >>>  " + writer);
+                output.println("  >>>  " + writer);
         }
     }
 

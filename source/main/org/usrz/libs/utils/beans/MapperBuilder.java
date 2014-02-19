@@ -104,8 +104,6 @@ public class MapperBuilder extends ClassBuilder {
         concreteClass.removeField(uninitialized);
         concreteClass.addField(initialized);
 
-        System.err.println("MEMBER IS -> " + initialized);
-
         return concreteClass;
     }
 
