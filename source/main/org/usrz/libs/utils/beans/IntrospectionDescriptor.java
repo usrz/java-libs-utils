@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 
@@ -36,7 +37,7 @@ public class IntrospectionDescriptor<T> {
 
     private final Class<T> type;
     private final HashMap<IntrospectorKey, IntrospectedProperty<T>> properties = new HashMap<>();
-    private final HashMap<Class<? extends Annotation>, Map<Annotation, IntrospectedProperty<T>>> byAnnotation = new HashMap<>();
+    private final HashMap<Class<? extends Annotation>, Map<Annotation, Set<IntrospectedProperty<T>>>> byAnnotation = new HashMap<>();
     private boolean sealed = false;
 
     /* ====================================================================== */
@@ -46,7 +47,7 @@ public class IntrospectionDescriptor<T> {
     }
 
     IntrospectionDescriptor<T> seal() {
-        for (Map.Entry<IntrospectorKey, ReadersAndWriters> entry: readersAndWriters.entrySet()) {
+        for (Entry<IntrospectorKey, ReadersAndWriters> entry: readersAndWriters.entrySet()) {
             final IntrospectorKey key = entry.getKey();
             final ReadersAndWriters value = entry.getValue();
             final IntrospectedProperty<T> property = new IntrospectedProperty<T>(entry.getKey(), value.readers, value.writers, this);
@@ -56,9 +57,17 @@ public class IntrospectionDescriptor<T> {
             if (annotation == null) continue;
             final Class<? extends Annotation> annotationClass = annotation.annotationType();
 
-            Map<Annotation, IntrospectedProperty<T>> properties = byAnnotation.get(annotationClass);
-            if (properties == null) byAnnotation.put(annotationClass, properties = new HashMap<Annotation, IntrospectedProperty<T>>());
-            properties.put(key.getAnnotation(), property);
+            Map<Annotation, Set<IntrospectedProperty<T>>> map = byAnnotation.get(annotationClass);
+            if (map == null) byAnnotation.put(annotationClass, map = new HashMap<Annotation, Set<IntrospectedProperty<T>>>());
+            Set<IntrospectedProperty<T>> set = map.get(annotation);
+            if (set == null) map.put(annotation, set = new HashSet<IntrospectedProperty<T>>());
+            set.add(property);
+        }
+
+        for (Entry<Class<? extends Annotation>, Map<Annotation, Set<IntrospectedProperty<T>>>> entry: byAnnotation.entrySet()) {
+            for (Entry<Annotation, Set<IntrospectedProperty<T>>> entry2: entry.getValue().entrySet())
+                entry2.setValue(Collections.unmodifiableSet(entry2.getValue()));
+            entry.setValue(Collections.unmodifiableMap(entry.getValue()));
         }
 
         sealed = true;
@@ -165,12 +174,12 @@ public class IntrospectionDescriptor<T> {
      * specified {@linkplain Annotation annotation class}, keyed by
      * {@link Annotation} instance.
      */
-    public <A extends Annotation> Map<A, IntrospectedProperty<T>> getProperties(Class<A> annotationClass) {
+    public <A extends Annotation> Map<A, Set<IntrospectedProperty<T>>> getProperties(Class<A> annotationClass) {
         if (! sealed) throw new IllegalStateException("Not sealed");
 
         @SuppressWarnings("unchecked")
-        final Map<A, IntrospectedProperty<T>> properties = (Map<A, IntrospectedProperty<T>>) byAnnotation.get(annotationClass);
-        return properties != null ? Collections.unmodifiableMap(properties) : Collections.<A, IntrospectedProperty<T>>emptyMap();
+        final Map<A, Set<IntrospectedProperty<T>>> properties = (Map<A, Set<IntrospectedProperty<T>>>) byAnnotation.get(annotationClass);
+        return properties == null ? Collections.<A, Set<IntrospectedProperty<T>>>emptyMap() : properties;
     }
 
     /* ====================================================================== */
@@ -227,7 +236,7 @@ public class IntrospectionDescriptor<T> {
 
     void describe(PrintStream output) {
         output.println(type.getName());
-        for (Map.Entry<IntrospectorKey, ReadersAndWriters> entry: readersAndWriters.entrySet()) {
+        for (Entry<IntrospectorKey, ReadersAndWriters> entry: readersAndWriters.entrySet()) {
             output.println("  " + entry.getKey());
             for (IntrospectorReader reader: entry.getValue().readers)
                 output.println("    <--  " + reader);

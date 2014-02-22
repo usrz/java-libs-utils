@@ -18,6 +18,7 @@ package org.usrz.libs.utils.beans;
 import static org.usrz.libs.utils.beans.InstanceBuilder.newInstance;
 
 import java.util.Map;
+import java.util.Set;
 
 import org.testng.annotations.Test;
 import org.usrz.libs.testing.AbstractTest;
@@ -75,18 +76,27 @@ public class BeanIntrospectorTest extends AbstractTest {
         assertEquals(annotatedField.read(annotated), "the value is 76543.0");
 
         /* See what we get when requesting "SimpleAnnotation" annotated fields */
-        final Map<SimpleAnnotation, IntrospectedProperty<AnnotatedBean>> simplyAnnotated = descriptor.getProperties(SimpleAnnotation.class);
+        final Map<SimpleAnnotation, Set<IntrospectedProperty<AnnotatedBean>>> simplyAnnotated = descriptor.getProperties(SimpleAnnotation.class);
         assertEquals(simplyAnnotated.size(), 1);
-        for (Map.Entry<SimpleAnnotation, IntrospectedProperty<AnnotatedBean>> entry: simplyAnnotated.entrySet()) {
+        for (Map.Entry<SimpleAnnotation, Set<IntrospectedProperty<AnnotatedBean>>> entry: simplyAnnotated.entrySet()) {
             assertEquals(entry.getKey().annotationType(), SimpleAnnotation.class);
-            assertTrue(entry.getValue().canRead());
-            assertTrue(entry.getValue().canWrite());
-            assertNull(entry.getValue().read(annotated));
+            final Set<IntrospectedProperty<AnnotatedBean>> set = entry.getValue();
+            assertEquals(set.size(), 2);
+            for (IntrospectedProperty<AnnotatedBean> property: set) {
+                final String name = property.getName();
+                assertTrue((name == null || "standardValue".equals(name)), "Wrong name " + name);
 
-            /* Write "object" get "string" */
-            final Object object = new Object();
-            entry.getValue().write(annotated, object);
-            assertEquals(entry.getValue().read(annotated), object.toString());
+                /* Null at the beginning */
+                assertTrue(property.canRead());
+                assertTrue(property.canWrite());
+                assertNull(property.read(annotated));
+
+                /* Write "object" get "string" */
+                final Object object = new Object();
+                property.write(annotated, object);
+                assertEquals(property.read(annotated), object.toString());
+            }
+
         }
     }
 

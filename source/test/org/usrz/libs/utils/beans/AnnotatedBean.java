@@ -22,6 +22,8 @@ public abstract class AnnotatedBean {
 
     @NotIntrospected
     private String nonStandardValue;
+    @NotIntrospected
+    private String standardValue;
 
     @SimpleAnnotation
     public void nonStandardValue(String something) {
@@ -31,6 +33,16 @@ public abstract class AnnotatedBean {
     @SimpleAnnotation
     public String nonStandardValue() {
         return nonStandardValue;
+    }
+
+    @SimpleAnnotation
+    public void setStandardValue(String something) {
+        standardValue = something;
+    }
+
+    @SimpleAnnotation
+    public String getStandardValue() {
+        return standardValue;
     }
 
     @ComplexAnnotation(number=4321)
