@@ -107,6 +107,21 @@ public class IntrospectedProperty<T> {
     /* READING                                                                */
     /* ====================================================================== */
 
+    public Object[] readAll(T instance)
+    throws IntrospectionException {
+        final Object[] values = new Object[this.readers.size()];
+
+        for (int x = 0; x < readers.size(); x ++) try {
+            values[x] = readers.get(x).read(instance);
+        } catch (IntrospectionException exception) {
+            throw exception;
+        } catch (Exception exception) {
+            throw new IntrospectionException("Exception reading %s", this, exception);
+        }
+
+        return values;
+    }
+
     public Object read(T instance)
     throws IntrospectionException {
         return read(instance, Object.class);

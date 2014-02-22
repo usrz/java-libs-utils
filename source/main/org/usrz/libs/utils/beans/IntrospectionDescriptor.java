@@ -202,10 +202,6 @@ public class IntrospectionDescriptor<T> {
         if (access.readers.isEmpty()) return access.readers.add(reader);
         if (addOnlyIfEmpty) return false;
 
-        /* Iterate through our readers, and only keep one per type */
-        for (IntrospectorReader current: access.readers)
-            if (current.getType().equals(reader.getType())) return false;
-
         /* We're lucky, we can add */
         access.readers.add(reader);
         return true;
@@ -224,10 +220,6 @@ public class IntrospectionDescriptor<T> {
         /* If empty, add, otherwise, conditionally add */
         if (access.writers.isEmpty()) return access.writers.add(writer);
         if (addOnlyIfEmpty) return false;
-
-        /* Iterate through our readers, and only keep one per type */
-        for (IntrospectorWriter current: access.writers)
-            if (current.getType().equals(writer.getType())) return false;
 
         /* We're lucky, we can add */
         access.writers.add(writer);
