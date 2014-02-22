@@ -51,7 +51,7 @@ public class InstanceBuilder {
      * <p>Any exception thrown by the Java reflection layer will be wrapped in
      * an <em>unchecked</em> exception.
      */
-    public static <T> T newInstance(Class<? extends T> concreteClass) {
+    public static <T> T newInstance(Class<?> concreteClass) {
         return newInstance(concreteClass, (Object[]) null);
     }
 
@@ -67,7 +67,7 @@ public class InstanceBuilder {
      * an <em>unchecked</em> exception.
      */
     @SuppressWarnings("unchecked")
-    public static <T> T newInstance(Class<? extends T> concreteClass, Object... parameters) {
+    public static <T> T newInstance(Class<?> concreteClass, Object... parameters) {
 
         final Class<?>[] classes = new Class<?>[parameters == null ? 0 : parameters.length];
         if (parameters == null) parameters = new Object[0];
