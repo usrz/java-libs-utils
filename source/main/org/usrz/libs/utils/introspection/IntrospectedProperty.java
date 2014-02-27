@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * ========================================================================== */
-package org.usrz.libs.utils.beans;
+package org.usrz.libs.utils.introspection;
 
 import java.lang.annotation.Annotation;
 import java.util.List;
@@ -101,6 +101,18 @@ public class IntrospectedProperty<T> {
      */
     public boolean canWrite() {
         return (writers != null) && (writers.size() > 0);
+    }
+
+    /**
+     * Returns <b>true</b> if this property can be written to with the
+     * specified type.
+     */
+    public boolean canWrite(Class<?> type) {
+        if (writers == null) return false;
+        for (IntrospectorWriter writer: writers) {
+            if (writer.getType().isAssignableFrom(type)) return true;
+        }
+        return false;
     }
 
     /* ====================================================================== */

@@ -19,6 +19,8 @@ import java.lang.reflect.Field;
 
 import org.testng.annotations.Test;
 import org.usrz.libs.testing.AbstractTest;
+import org.usrz.libs.utils.PrimitivesBean;
+import org.usrz.libs.utils.SimpleBean;
 
 public class BeanBuilderTest extends AbstractTest {
 

@@ -13,43 +13,43 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * ========================================================================== */
-package org.usrz.libs.utils.beans;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+package org.usrz.libs.utils.introspection;
 
 /**
- * An {@link IntrospectorReader} using {@link Method}s
+ * Base class for {@link IntrospectorReader}s and {@link IntrospectorWriter}s
  *
  * @author <a href="mailto:pier@usrz.com">Pier Fumagalli</a>
  */
-class IntrospectorMethodReader extends IntrospectorReader {
+abstract class IntrospectorAccess {
 
-    private final Method method;
+    private final Class<?> type;
+    private final boolean primitive;
 
-    IntrospectorMethodReader(Method method) {
-        super(method.getReturnType());
-        this.method = method;
-        method.setAccessible(true);
+    IntrospectorAccess(Class<?> type) {
+        /* NULLs or VOIDs are bad */
+        if (type == null) throw new NullPointerException("Null type");
+        if (type.equals(void.class) || type.equals(Void.class))
+            throw new IllegalArgumentException("Void type");
+
+        /* Access the autoboxed class if this is a primitive */
+        primitive = type.isPrimitive();
+        this.type = type.equals(boolean.class) ? Boolean.class   :
+                    type.equals(byte.class)    ? Byte.class      :
+                    type.equals(short.class)   ? Short.class     :
+                    type.equals(int.class)     ? Integer.class   :
+                    type.equals(long.class)    ? Long.class      :
+                    type.equals(float.class)   ? Float.class     :
+                    type.equals(double.class)  ? Double.class    :
+                    type.equals(char.class)    ? Character.class :
+                    type;
     }
 
-    @Override
-    Object read(Object instance) {
-        try {
-            return method.invoke(instance);
-        } catch (IllegalAccessException exception) {
-            throw new IllegalStateException("Exception accessing method " + method, exception);
-        } catch (InvocationTargetException exception) {
-            final Throwable cause = exception.getCause();
-            if (cause instanceof RuntimeException) throw (RuntimeException) cause;
-            if (cause instanceof Error) throw (Error) cause;
-            throw new IllegalStateException("Method " + method + " threw an exception", exception);
-        }
+    final Class<?> getType() {
+        return type;
     }
 
-    @Override
-    public String toString() {
-        return this.getClass().getSimpleName() + "[" + method + "]";
+    final boolean isPrimitive() {
+        return primitive;
     }
 
 }

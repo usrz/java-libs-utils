@@ -13,13 +13,19 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * ========================================================================== */
-package org.usrz.libs.utils.beans;
+package org.usrz.libs.utils;
 
 import java.util.Map;
 
 import org.testng.annotations.Test;
 import org.usrz.libs.logging.Logging;
 import org.usrz.libs.testing.AbstractTest;
+import org.usrz.libs.utils.beans.Builder;
+import org.usrz.libs.utils.beans.GettableBean;
+import org.usrz.libs.utils.beans.InstanceBuilder;
+import org.usrz.libs.utils.beans.Mapper;
+import org.usrz.libs.utils.beans.MapperBuilder;
+import org.usrz.libs.utils.beans.SettableBean;
 
 public class MapperBuilderTest extends AbstractTest {
 

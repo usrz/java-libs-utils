@@ -13,32 +13,30 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * ========================================================================== */
-package org.usrz.libs.utils.beans;
+package org.usrz.libs.utils.introspection;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 /**
- * An {@link IntrospectorWriter} using {@link Method}s
+ * An {@link IntrospectorReader} using {@link Method}s
  *
  * @author <a href="mailto:pier@usrz.com">Pier Fumagalli</a>
  */
-class IntrospectorMethodWriter extends IntrospectorWriter {
+class IntrospectorMethodReader extends IntrospectorReader {
 
     private final Method method;
 
-    IntrospectorMethodWriter(Method method) {
-        super(method.getParameterTypes()[0]);
+    IntrospectorMethodReader(Method method) {
+        super(method.getReturnType());
         this.method = method;
         method.setAccessible(true);
     }
 
     @Override
-    void write(Object instance, Object value) {
-        if ((value == null) && isPrimitive())
-            throw new NullPointerException("Null value for primitive " + method.getParameterTypes()[0]);
+    Object read(Object instance) {
         try {
-            method.invoke(instance, value);
+            return method.invoke(instance);
         } catch (IllegalAccessException exception) {
             throw new IllegalStateException("Exception accessing method " + method, exception);
         } catch (InvocationTargetException exception) {
@@ -54,4 +52,14 @@ class IntrospectorMethodWriter extends IntrospectorWriter {
         return this.getClass().getSimpleName() + "[" + method + "]";
     }
 
+    @Override
+    public boolean equals(Object object) {
+        if (object == this) return true;
+        if (object == null) return false;
+        try {
+            return ((IntrospectorMethodReader) object).method.equals(method);
+        } catch (ClassCastException exception) {
+            return false;
+        }
+    }
 }

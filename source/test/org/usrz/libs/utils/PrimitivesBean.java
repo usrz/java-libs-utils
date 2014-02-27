@@ -13,41 +13,26 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * ========================================================================== */
-package org.usrz.libs.utils.beans;
+package org.usrz.libs.utils;
 
-/**
- * An <em>unchecked</em> exception thrown when dealing with bean introspection.
- *
- * @author <a href="mailto:pier@usrz.com">Pier Fumagalli</a>
- */
-public class IntrospectionException extends RuntimeException {
+public interface PrimitivesBean {
 
-    private final IntrospectedProperty<?> property;
+    public boolean getBooleanValue();
+    public byte getByteValue();
+    public char getCharValue();
+    public short getShortValue();
+    public int getIntValue();
+    public long getLongValue();
+    public float getFloatValue();
+    public double getDoubleValue();
 
-    IntrospectionException(String message) {
-        super(message);
-        property = null;
-    }
-
-    IntrospectionException(String message, Throwable cause) {
-        super(message, cause);
-        property = null;
-    }
-
-    IntrospectionException(String message, IntrospectedProperty<?> property) {
-        this(message, property, null);
-    }
-
-    IntrospectionException(String message, IntrospectedProperty<?> property, Throwable cause) {
-        super(String.format(message, property), cause);
-        this.property = property;
-    }
-
-    /**
-     * Return the {@link IntrospectedProperty} (if any) associated with this.
-     */
-    public IntrospectedProperty<?> getProperty() {
-        return property;
-    }
+    public void setBooleanValue(boolean booleanValue);
+    public void setByteValue(byte byteValue);
+    public void setCharValue(char charValue);
+    public void setShortValue(short shortValue);
+    public void setIntValue(int intValue);
+    public void setLongValue(long longValue);
+    public void setFloatValue(float floatValue);
+    public void setDoubleValue(double doubleValue);
 
 }

@@ -13,43 +13,19 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * ========================================================================== */
-package org.usrz.libs.utils.beans;
+package org.usrz.libs.utils.introspection;
 
 /**
- * Base class for {@link IntrospectorReader}s and {@link IntrospectorWriter}s
+ * An {@link IntrospectorWriter} writes values to object instrances.
  *
  * @author <a href="mailto:pier@usrz.com">Pier Fumagalli</a>
  */
-abstract class IntrospectorAccess {
+abstract class IntrospectorWriter extends IntrospectorAccess {
 
-    private final Class<?> type;
-    private final boolean primitive;
-
-    IntrospectorAccess(Class<?> type) {
-        /* NULLs or VOIDs are bad */
-        if (type == null) throw new NullPointerException("Null type");
-        if (type.equals(void.class) || type.equals(Void.class))
-            throw new IllegalArgumentException("Void type");
-
-        /* Access the autoboxed class if this is a primitive */
-        primitive = type.isPrimitive();
-        this.type = type.equals(boolean.class) ? Boolean.class   :
-                    type.equals(byte.class)    ? Byte.class      :
-                    type.equals(short.class)   ? Short.class     :
-                    type.equals(int.class)     ? Integer.class   :
-                    type.equals(long.class)    ? Long.class      :
-                    type.equals(float.class)   ? Float.class     :
-                    type.equals(double.class)  ? Double.class    :
-                    type.equals(char.class)    ? Character.class :
-                    type;
+    IntrospectorWriter(Class<?> type) {
+        super(type);
     }
 
-    final Class<?> getType() {
-        return type;
-    }
-
-    final boolean isPrimitive() {
-        return primitive;
-    }
+    abstract void write(Object instance, Object value);
 
 }

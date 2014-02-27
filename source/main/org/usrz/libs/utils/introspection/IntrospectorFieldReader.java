@@ -13,28 +13,47 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * ========================================================================== */
-package org.usrz.libs.utils.beans;
+package org.usrz.libs.utils.introspection;
 
-import static java.lang.annotation.ElementType.FIELD;
-import static java.lang.annotation.ElementType.METHOD;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
-
-import java.lang.annotation.Annotation;
-import java.lang.annotation.Documented;
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
+import java.lang.reflect.Field;
 
 /**
- * A simple {@link Annotation} instructing an {@link Introspector} to ignore
- * the method or field annotated with this.
+ * An {@link IntrospectorReader} using {@link Field}s
  *
  * @author <a href="mailto:pier@usrz.com">Pier Fumagalli</a>
  */
-@Documented
-@Retention(RUNTIME)
-@Target({FIELD, METHOD})
-public @interface NotIntrospected {
+class IntrospectorFieldReader extends IntrospectorReader {
 
-    /* Nothing, really */
+    private final Field field;
 
+    IntrospectorFieldReader(Field field) {
+        super(field.getType());
+        this.field = field;
+        field.setAccessible(true);
+    }
+
+    @Override
+    Object read(Object instance) {
+        try {
+            return field.get(instance);
+        } catch (IllegalAccessException exception) {
+            throw new IllegalStateException("Exception accessing field " + field, exception);
+        }
+    }
+
+    @Override
+    public String toString() {
+        return this.getClass().getSimpleName() + "[" + field + "]";
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (object == this) return true;
+        if (object == null) return false;
+        try {
+            return ((IntrospectorFieldReader) object).field.equals(field);
+        } catch (ClassCastException exception) {
+            return false;
+        }
+    }
 }

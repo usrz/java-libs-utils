@@ -13,26 +13,45 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * ========================================================================== */
-package org.usrz.libs.utils.beans;
+package org.usrz.libs.utils.introspection;
 
-public interface PrimitivesBean {
+public abstract class AnnotatedBean {
 
-    public boolean getBooleanValue();
-    public byte getByteValue();
-    public char getCharValue();
-    public short getShortValue();
-    public int getIntValue();
-    public long getLongValue();
-    public float getFloatValue();
-    public double getDoubleValue();
+    public String annotatedField;
+    public Void voidField;
 
-    public void setBooleanValue(boolean booleanValue);
-    public void setByteValue(byte byteValue);
-    public void setCharValue(char charValue);
-    public void setShortValue(short shortValue);
-    public void setIntValue(int intValue);
-    public void setLongValue(long longValue);
-    public void setFloatValue(float floatValue);
-    public void setDoubleValue(double doubleValue);
+    @NotIntrospected
+    private String nonStandardValue;
+    @NotIntrospected
+    private String standardValue;
+
+    @SimpleAnnotation
+    public void nonStandardValue(String something) {
+        nonStandardValue = something;
+    }
+
+    @SimpleAnnotation
+    public String nonStandardValue() {
+        return nonStandardValue;
+    }
+
+    @SimpleAnnotation
+    public void setStandardValue(String something) {
+        standardValue = something;
+    }
+
+    @SimpleAnnotation
+    public String getStandardValue() {
+        return standardValue;
+    }
+
+    @ComplexAnnotation(number=4321)
+    public void setAnnotatedField(float value) {
+        annotatedField = "the value is " + value;
+    }
+
+    /* Those should simply NOT make the introspector fail */
+    public void invalidSetter(String foo) {}
+    public String invalidGetter() { return null; }
 
 }

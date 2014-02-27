@@ -13,19 +13,20 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * ========================================================================== */
-package org.usrz.libs.utils.beans;
+package org.usrz.libs.utils.introspection;
+
 
 /**
- * An {@link IntrospectorWriter} writes values to object instrances.
+ * An {@link IntrospectorReader} reads values from object instrances.
  *
  * @author <a href="mailto:pier@usrz.com">Pier Fumagalli</a>
  */
-abstract class IntrospectorWriter extends IntrospectorAccess {
+abstract class IntrospectorReader extends IntrospectorAccess {
 
-    IntrospectorWriter(Class<?> type) {
+    IntrospectorReader(Class<?> type) {
         super(type);
     }
 
-    abstract void write(Object instance, Object value);
+    abstract Object read(Object instance);
 
 }

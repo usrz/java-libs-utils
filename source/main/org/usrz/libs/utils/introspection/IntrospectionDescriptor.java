@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * ========================================================================== */
-package org.usrz.libs.utils.beans;
+package org.usrz.libs.utils.introspection;
 
 import java.io.PrintStream;
 import java.lang.annotation.Annotation;
@@ -203,6 +203,7 @@ public class IntrospectionDescriptor<T> {
         if (addOnlyIfEmpty) return false;
 
         /* We're lucky, we can add */
+        if (access.readers.contains(reader)) return false;
         access.readers.add(reader);
         return true;
     }
@@ -222,6 +223,7 @@ public class IntrospectionDescriptor<T> {
         if (addOnlyIfEmpty) return false;
 
         /* We're lucky, we can add */
+        if (access.writers.contains(writer)) return false;
         access.writers.add(writer);
         return true;
     }

@@ -13,45 +13,28 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * ========================================================================== */
-package org.usrz.libs.utils.beans;
+package org.usrz.libs.utils.introspection;
 
-public abstract class AnnotatedBean {
+import static java.lang.annotation.ElementType.FIELD;
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-    public String annotatedField;
-    public Void voidField;
+import java.lang.annotation.Annotation;
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 
-    @NotIntrospected
-    private String nonStandardValue;
-    @NotIntrospected
-    private String standardValue;
+/**
+ * A simple {@link Annotation} instructing an {@link Introspector} to ignore
+ * the method or field annotated with this.
+ *
+ * @author <a href="mailto:pier@usrz.com">Pier Fumagalli</a>
+ */
+@Documented
+@Retention(RUNTIME)
+@Target({FIELD, METHOD})
+public @interface NotIntrospected {
 
-    @SimpleAnnotation
-    public void nonStandardValue(String something) {
-        nonStandardValue = something;
-    }
-
-    @SimpleAnnotation
-    public String nonStandardValue() {
-        return nonStandardValue;
-    }
-
-    @SimpleAnnotation
-    public void setStandardValue(String something) {
-        standardValue = something;
-    }
-
-    @SimpleAnnotation
-    public String getStandardValue() {
-        return standardValue;
-    }
-
-    @ComplexAnnotation(number=4321)
-    public void setAnnotatedField(float value) {
-        annotatedField = "the value is " + value;
-    }
-
-    /* Those should simply NOT make the introspector fail */
-    public void invalidSetter(String foo) {}
-    public String invalidGetter() { return null; }
+    /* Nothing, really */
 
 }

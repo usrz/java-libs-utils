@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * ========================================================================== */
-package org.usrz.libs.utils.beans;
+package org.usrz.libs.utils.introspection;
 
 import static org.usrz.libs.utils.beans.InstanceBuilder.newInstance;
 
@@ -22,6 +22,9 @@ import java.util.Set;
 
 import org.testng.annotations.Test;
 import org.usrz.libs.testing.AbstractTest;
+import org.usrz.libs.utils.PrimitivesBean;
+import org.usrz.libs.utils.SimpleBean;
+import org.usrz.libs.utils.beans.BeanBuilder;
 
 public class BeanIntrospectorTest extends AbstractTest {
 

@@ -13,23 +13,41 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * ========================================================================== */
-package org.usrz.libs.utils.beans;
+package org.usrz.libs.utils.introspection;
 
-import static java.lang.annotation.ElementType.FIELD;
-import static java.lang.annotation.ElementType.METHOD;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
+/**
+ * An <em>unchecked</em> exception thrown when dealing with bean introspection.
+ *
+ * @author <a href="mailto:pier@usrz.com">Pier Fumagalli</a>
+ */
+public class IntrospectionException extends RuntimeException {
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
+    private final IntrospectedProperty<?> property;
 
-@Documented
-@Retention(RUNTIME)
-@Target({FIELD, METHOD})
-public @interface ComplexAnnotation {
+    IntrospectionException(String message) {
+        super(message);
+        property = null;
+    }
 
-    public String value() default "";
+    IntrospectionException(String message, Throwable cause) {
+        super(message, cause);
+        property = null;
+    }
 
-    public int number() default 1234;
+    IntrospectionException(String message, IntrospectedProperty<?> property) {
+        this(message, property, null);
+    }
+
+    IntrospectionException(String message, IntrospectedProperty<?> property, Throwable cause) {
+        super(String.format(message, property), cause);
+        this.property = property;
+    }
+
+    /**
+     * Return the {@link IntrospectedProperty} (if any) associated with this.
+     */
+    public IntrospectedProperty<?> getProperty() {
+        return property;
+    }
 
 }

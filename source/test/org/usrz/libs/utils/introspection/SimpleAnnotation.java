@@ -13,37 +13,19 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * ========================================================================== */
-package org.usrz.libs.utils.beans;
+package org.usrz.libs.utils.introspection;
 
-import java.lang.reflect.Field;
+import static java.lang.annotation.ElementType.FIELD;
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-/**
- * An {@link IntrospectorReader} using {@link Field}s
- *
- * @author <a href="mailto:pier@usrz.com">Pier Fumagalli</a>
- */
-class IntrospectorFieldReader extends IntrospectorReader {
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 
-    private final Field field;
-
-    IntrospectorFieldReader(Field field) {
-        super(field.getType());
-        this.field = field;
-        field.setAccessible(true);
-    }
-
-    @Override
-    Object read(Object instance) {
-        try {
-            return field.get(instance);
-        } catch (IllegalAccessException exception) {
-            throw new IllegalStateException("Exception accessing field " + field, exception);
-        }
-    }
-
-    @Override
-    public String toString() {
-        return this.getClass().getSimpleName() + "[" + field + "]";
-    }
+@Documented
+@Retention(RUNTIME)
+@Target({FIELD, METHOD})
+public @interface SimpleAnnotation {
 
 }

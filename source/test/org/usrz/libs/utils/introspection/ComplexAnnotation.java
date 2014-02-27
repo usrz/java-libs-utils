@@ -13,20 +13,23 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * ========================================================================== */
-package org.usrz.libs.utils.beans;
+package org.usrz.libs.utils.introspection;
 
+import static java.lang.annotation.ElementType.FIELD;
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-/**
- * An {@link IntrospectorReader} reads values from object instrances.
- *
- * @author <a href="mailto:pier@usrz.com">Pier Fumagalli</a>
- */
-abstract class IntrospectorReader extends IntrospectorAccess {
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 
-    IntrospectorReader(Class<?> type) {
-        super(type);
-    }
+@Documented
+@Retention(RUNTIME)
+@Target({FIELD, METHOD})
+public @interface ComplexAnnotation {
 
-    abstract Object read(Object instance);
+    public String value() default "";
+
+    public int number() default 1234;
 
 }
