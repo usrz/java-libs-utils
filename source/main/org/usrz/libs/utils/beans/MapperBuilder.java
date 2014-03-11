@@ -73,10 +73,17 @@ public class MapperBuilder extends ClassBuilder {
     @Override
     final CtMethod createMethod(CtClass concreteClass, CtMethod method)
     throws NotFoundException, CannotCompileException {
-        if (method.getName().equals("mappedProperties") &&
-            method.getReturnType().getName().equals("java.util.Map")) {
+
+        final String methodName = method.getName();
+        final CtClass[] parameters = method.getParameterTypes();
+
+        if (methodName.equals("mappedProperties") && (parameters.length == 0) &&
+            method.getReturnType().getName().equals("java.util.Map"))
             return concreteClass.getDeclaredMethod("mappedProperties", new CtClass[0]);
-        }
+
+        if (methodName.startsWith("with") && (parameters.length == 1))
+            return createSetter(concreteClass, method, fieldName(method, 4));
+
         return super.createMethod(concreteClass, method);
     }
 

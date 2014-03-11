@@ -148,8 +148,10 @@ public abstract class ClassBuilder {
 
     /* ====================================================================== */
 
-    /* Getter/Setter method name to field name */
-    private String fieldName(CtMethod method, int length) {
+    /**
+     * Convert a getter or setter method name to a field name.
+     */
+    String fieldName(CtMethod method, int length) {
         final String methodName = method.getName();
         if (methodName.length() > length) {
             return Character.toLowerCase(methodName.charAt(length)) + methodName.substring(length + 1);
