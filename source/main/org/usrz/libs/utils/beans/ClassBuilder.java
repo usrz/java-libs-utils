@@ -24,10 +24,15 @@ import java.util.logging.Logger;
 import javassist.CannotCompileException;
 import javassist.ClassPool;
 import javassist.CtClass;
+import javassist.CtConstructor;
 import javassist.CtField;
 import javassist.CtMethod;
+import javassist.CtNewConstructor;
 import javassist.Modifier;
 import javassist.NotFoundException;
+import javassist.bytecode.AnnotationsAttribute;
+import javassist.bytecode.MethodInfo;
+import javassist.bytecode.ParameterAnnotationsAttribute;
 
 /**
  * A {@link ClassBuilder} <em>automagically</em> creates getters and setters.
@@ -197,7 +202,40 @@ public abstract class ClassBuilder {
      */
     CtClass createClass(String className, CtClass superClass)
     throws NotFoundException, CannotCompileException {
-        return classPool.makeClass(className, superClass);
+        final CtClass generated = classPool.makeClass(className, superClass);
+
+        /* Process constructors for the super class */
+        for (CtConstructor superConstructor: superClass.getConstructors()) {
+
+            /* Make a new constructor with the same signature, simply calling "super(...)" */
+            final CtConstructor constructor = CtNewConstructor.make(superConstructor.getParameterTypes(),
+                                                                    superConstructor.getExceptionTypes(),
+                                                                    generated);
+
+            /* Copy constructor *AND* constructor parameters annotations */
+            final MethodInfo constructorInfo = constructor.getMethodInfo();
+            for (Object attribute : superConstructor.getMethodInfo().getAttributes()) {
+                if (attribute instanceof AnnotationsAttribute) {
+
+                    /* Constructor annotations copy */
+                    final AnnotationsAttribute annotations = (AnnotationsAttribute) attribute;
+                    constructorInfo.addAttribute(annotations.copy(constructorInfo.getConstPool(), null));
+
+                } else if (attribute instanceof ParameterAnnotationsAttribute) {
+
+                    /* Constructor parameters annotations copy */
+                    final ParameterAnnotationsAttribute annotations = (ParameterAnnotationsAttribute) attribute;
+                    constructorInfo.addAttribute(annotations.copy(constructorInfo.getConstPool(), null));
+
+                }
+            }
+
+            /* Add the constructor */
+            generated.addConstructor(constructor);
+        }
+
+        /* Done prepping the class */
+        return generated;
     }
 
     /**
