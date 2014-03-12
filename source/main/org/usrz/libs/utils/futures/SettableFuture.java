@@ -27,12 +27,10 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
-
-import org.usrz.libs.logging.Log;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class SettableFuture<T> implements Future<T> {
-
-    private static final Log log = new Log();
 
     private final AtomicReference<Result> result = new AtomicReference<>(null);
     private final List<Future<?>> futures = new ArrayList<>();
@@ -148,7 +146,8 @@ public class SettableFuture<T> implements Future<T> {
                 }
             }
         } catch (Throwable throwable) {
-            log.error(throwable, "Exception notifying future %s" + future);
+            final String message = String.format("Exception notifying future %s" + future);
+            Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, message, throwable);
         }
     }
 
