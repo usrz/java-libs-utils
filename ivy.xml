@@ -5,7 +5,9 @@
 
   <configurations>
     <conf name="default" visibility="public"/>
-    <conf name="compile" visibility="private" extends="default"/>
+    <conf name="beans"   visibility="public"  extends="default"/>
+    <conf name="guice"   visibility="public"  extends="default"/>
+    <conf name="compile" visibility="private" extends="beans,guice"/>
     <conf name="testing" visibility="private" extends="compile"/>
   </configurations>
 
@@ -16,7 +18,8 @@
   </publications>
 
   <dependencies>
-    <dependency org="org.javassist" name="javassist" rev="latest.release" conf="default"/>
+    <dependency org="com.google" name="guice" rev="latest.release" conf="guice-&gt;default"/>
+    <dependency org="org.javassist" name="javassist" rev="latest.release" conf="beans-&gt;default"/>
 
     <dependency org="org.usrz.libs" name="logging" rev="latest.release" conf="testing-&gt;default"/>
     <dependency org="org.usrz.libs" name="testing" rev="latest.release" conf="testing-&gt;default"/>
