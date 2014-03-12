@@ -26,6 +26,8 @@ import javassist.Modifier;
 import javassist.NotFoundException;
 import javassist.bytecode.analysis.Type;
 
+import com.google.inject.Inject;
+
 /**
  * A {@link MapperBuilder} in a similar fashion to a {@link BeanBuilder} but
  * stores the values from setters and to getters in a {@link Map} rather than
@@ -53,13 +55,22 @@ public class MapperBuilder extends ClassBuilder {
     }
 
     /**
-     * Create a new {@link MapperBuilder} using the specifed {@link ClassPool}.
+     * Create a new {@link MapperBuilder} using the specified {@link ClassPool}.
      *
      * @see ClassBuilder#ClassBuilder(ClassPool)
      */
     public MapperBuilder(ClassPool classPool) {
         super(classPool);
         beanBuilder = new BeanBuilder(this.classPool);
+    }
+
+    /**
+     * Create a new {@link MapperBuilder} using the specified{@link BeanBuilder}.
+     */
+    @Inject
+    public MapperBuilder(BeanBuilder beanBuilder) {
+        super(beanBuilder.classPool);
+        this.beanBuilder = beanBuilder;
     }
 
     /* ====================================================================== */

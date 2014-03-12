@@ -24,6 +24,8 @@ import javassist.Modifier;
 import javassist.NotFoundException;
 import javassist.bytecode.analysis.Type;
 
+import com.google.inject.Inject;
+
 /**
  * A {@link BeanBuilder} is a {@link ClassBuilder} creating getters and setters
  * methods backed by (private) fields..
@@ -70,6 +72,7 @@ public class BeanBuilder extends ClassBuilder {
      *
      * @see ClassBuilder#ClassBuilder(ClassPool)
      */
+    @Inject
     public BeanBuilder(ClassPool classPool) {
         super(classPool);
     }

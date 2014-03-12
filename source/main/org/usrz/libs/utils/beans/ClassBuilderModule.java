@@ -15,6 +15,8 @@
  * ========================================================================== */
 package org.usrz.libs.utils.beans;
 
+import javassist.ClassPool;
+
 import com.google.inject.Binder;
 import com.google.inject.Inject;
 import com.google.inject.Key;
@@ -45,6 +47,7 @@ public abstract class ClassBuilderModule implements Module {
      */
     @Override
     public final void configure(Binder binder) {
+        binder.bind(ClassPool.class).toInstance(ClassPool.getDefault());
         binder.bind(BeanBuilder.class);
         binder.bind(MapperBuilder.class);
         this.binder.set(binder);
