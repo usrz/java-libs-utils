@@ -4,12 +4,11 @@
   <info organisation="org.usrz.libs" module="utils" revision="0.1.3"/>
 
   <configurations>
-    <conf name="default" visibility="public"/>
-    <conf name="beans"   visibility="public"  extends="default"/>
-    <conf name="guice"   visibility="public"  extends="default"/>
-    <conf name="jackson" visibility="public"  extends="default"/>
-    <conf name="compile" visibility="private" extends="beans,guice,jackson"/>
-    <conf name="testing" visibility="private" extends="compile"/>
+    <conf name="default"        visibility="public"/>
+    <conf name="beans"          visibility="public"  extends="default"/>
+    <conf name="configurations" visibility="public"  extends="default"/>
+    <conf name="compile"        visibility="private" extends="beans,configurations"/>
+    <conf name="testing"        visibility="private" extends="compile"/>
   </configurations>
 
   <publications>
@@ -19,10 +18,10 @@
   </publications>
 
   <dependencies>
-    <dependency org="com.google" name="guice" rev="latest.release" conf="guice-&gt;default"/>
     <dependency org="org.javassist" name="javassist" rev="latest.release" conf="beans-&gt;default"/>
-    <dependency org="com.fasterxml" name="jackson-databind" rev="latest.release" conf="jackson-&gt;default"/>
+    <dependency org="com.fasterxml" name="jackson-databind" rev="latest.release" conf="configurations-&gt;default"/>
 
+    <dependency org="com.google" name="guice" rev="latest.release" conf="compile-&gt;default"/>
 
     <dependency org="org.usrz.libs" name="logging" rev="latest.release" conf="testing-&gt;default"/>
     <dependency org="org.usrz.libs" name="testing" rev="latest.release" conf="testing-&gt;default"/>
