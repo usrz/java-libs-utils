@@ -18,8 +18,6 @@ package org.usrz.libs.utils.beans;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javassist.CannotCompileException;
 import javassist.ClassPool;
@@ -33,6 +31,9 @@ import javassist.NotFoundException;
 import javassist.bytecode.AnnotationsAttribute;
 import javassist.bytecode.MethodInfo;
 import javassist.bytecode.ParameterAnnotationsAttribute;
+
+import org.usrz.libs.logging.Log;
+;
 
 /**
  * A {@link ClassBuilder} <em>automagically</em> creates getters and setters.
@@ -61,13 +62,14 @@ import javassist.bytecode.ParameterAnnotationsAttribute;
  */
 public abstract class ClassBuilder {
 
-    /* Logger, use Java for reuse */
-    private final Logger logger = Logger.getLogger(this.getClass().getName());
     /* Random for creating class names */
     private final Random random = new Random();
 
     /** The Javassist {@link ClassPool} to use specified at construction. */
     protected final ClassPool classPool;
+
+    /** Logger */
+    protected static final Log log = new Log();
 
     /* ====================================================================== */
 
@@ -110,22 +112,6 @@ public abstract class ClassBuilder {
             }
         }
         return String.format(format, converted);
-    }
-
-    /**
-     * Convenience method used to append debug output.
-     */
-    void debug(String format, Object... arguments) {
-        if (! logger.isLoggable(Level.FINE)) return;
-        logger.fine(formatMessage(format, arguments));
-    }
-
-    /**
-     * Convenience method used to append trace output.
-     */
-    void trace(String format, Object... arguments) {
-        if (! logger.isLoggable(Level.FINER)) return;
-        logger.finer(formatMessage(format, arguments));
     }
 
     /**
@@ -322,7 +308,7 @@ public abstract class ClassBuilder {
         }
 
         /* Note what we've done */
-        debug("Created class %s extending %s", concreteClass, concreteClass.getSuperclass());
+        log.debug("Created class %s extending %s", concreteClass, concreteClass.getSuperclass());
 
         /* Constructor and superclasses are done, on to interfaces */
         for (Class<?> currentInterface: interfacesSet) {
@@ -335,7 +321,7 @@ public abstract class ClassBuilder {
             /* Get the interface and add it to our concrete class */
             final CtClass interfaceClass = classPool.getCtClass(currentInterface.getName());
             concreteClass.addInterface(interfaceClass);
-            debug("Adding interface class %s to class %s", interfaceClass, concreteClass);
+           log.debug("Adding interface class %s to class %s", interfaceClass, concreteClass);
 
             /* Let's see what methods we have to implement */
             for (CtMethod method: interfaceClass.getMethods()) {

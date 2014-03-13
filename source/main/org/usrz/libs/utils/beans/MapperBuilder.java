@@ -111,7 +111,7 @@ public class MapperBuilder extends ClassBuilder {
 
         final CtClass mapperClass = classPool.get(Mapper.class.getName());
 
-        debug("Adding interface %s to class %s", mapperClass, concreteClass);
+        log.debug("Adding interface %s to class %s", mapperClass, concreteClass);
         concreteClass.addInterface(mapperClass);
 
         final CtMethod method = mapperClass.getMethod("mappedProperties", "()Ljava/util/Map;");
@@ -133,7 +133,7 @@ public class MapperBuilder extends ClassBuilder {
     CtMethod createSetter(CtClass concreteClass, CtMethod method, String fieldName)
     throws NotFoundException, CannotCompileException {
 
-        trace("Instrumenting setter %s", method);
+        log.trace("Instrumenting setter %s", method);
 
         final CtClass parameterType = method.getParameterTypes()[0];
 
@@ -180,7 +180,7 @@ public class MapperBuilder extends ClassBuilder {
         if (returnThis) body.append("return this; ");
         body.append('}');
 
-        trace("Generated: %s ", body);
+        log.trace("Generated: %s ", body);
 
         final CtMethod setter = CtMethod.make(body.toString(), concreteClass);
         concreteClass.addMethod(setter);
@@ -196,7 +196,7 @@ public class MapperBuilder extends ClassBuilder {
     CtMethod createGetter(CtClass concreteClass, CtMethod method, String fieldName)
     throws NotFoundException, CannotCompileException {
 
-        trace("Instrumenting getter %s", method);
+        log.trace("Instrumenting getter %s", method);
 
         final CtClass returnType = method.getReturnType();
         final StringBuilder body = new StringBuilder(Modifier.toString(method.getModifiers() ^ Modifier.ABSTRACT))
@@ -238,7 +238,7 @@ public class MapperBuilder extends ClassBuilder {
 
         body.append("; }");
 
-        trace("Generated: %s ", body);
+        log.trace("Generated: %s ", body);
 
         CtMethod getter = CtMethod.make(body.toString(), concreteClass);
         concreteClass.addMethod(getter);

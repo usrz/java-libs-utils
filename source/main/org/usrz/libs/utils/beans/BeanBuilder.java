@@ -87,7 +87,7 @@ public class BeanBuilder extends ClassBuilder {
     CtMethod createSetter(CtClass concreteClass, CtMethod method, String fieldName)
     throws NotFoundException, CannotCompileException {
 
-        trace("Instrumenting setter %s", method);
+        log.trace("Instrumenting setter %s", method);
 
         final CtClass parameterType = method.getParameterTypes()[0];
 
@@ -97,11 +97,11 @@ public class BeanBuilder extends ClassBuilder {
                 throw exception("Field \"%s\" types mismatch: expected %s but found %s",
                                 fieldName, parameterType, oldField.getType());
 
-            trace("Skipping existing field \"%s\" declaration instrumenting setter %s", fieldName, method.getName());
+            log.trace("Skipping existing field \"%s\" declaration instrumenting setter %s", fieldName, method.getName());
         } catch (NotFoundException exception) {
             final CtField newField = new CtField(parameterType, fieldName, concreteClass);
             concreteClass.addField(newField);
-            trace("Adding field \"%s\" of type %s instrumenting setter %s", fieldName, parameterType, method.getName());
+            log.trace("Adding field \"%s\" of type %s instrumenting setter %s", fieldName, parameterType, method.getName());
         }
 
         final Type returnType = Type.get(method.getReturnType());
@@ -128,7 +128,7 @@ public class BeanBuilder extends ClassBuilder {
         if (returnThis) body.append("return this; ");
         body.append('}');
 
-        trace("Generated: %s ", body);
+        log.trace("Generated: %s ", body);
 
         final CtMethod setter = CtMethod.make(body.toString(), concreteClass);
         concreteClass.addMethod(setter);
@@ -143,7 +143,7 @@ public class BeanBuilder extends ClassBuilder {
     CtMethod createGetter(CtClass concreteClass, CtMethod method, String fieldName)
     throws NotFoundException, CannotCompileException {
 
-        trace("Instrumenting getter %s", method);
+        log.trace("Instrumenting getter %s", method);
 
         final CtClass returnType = method.getReturnType();
         try {
@@ -151,12 +151,12 @@ public class BeanBuilder extends ClassBuilder {
             if (!oldField.getType().equals(returnType))
                 throw exception("Field \"%s\" types mismatch: expected %s but found %s",
                                 fieldName, returnType, oldField.getType());
-            trace("Skipping existing field \"%s\" declaration instrumenting getter %s", fieldName, method.getName());
+            log.trace("Skipping existing field \"%s\" declaration instrumenting getter %s", fieldName, method.getName());
         } catch (NotFoundException exception) {
             final CtField newField = new CtField(returnType, fieldName, concreteClass);
             newField.setModifiers(Modifier.PUBLIC);
             concreteClass.addField(newField);
-            trace("Adding field \"%s\" of type %s instrumenting getter %s", fieldName, returnType, method.getName());
+            log.trace("Adding field \"%s\" of type %s instrumenting getter %s", fieldName, returnType, method.getName());
         }
 
         final String body = new StringBuilder(Modifier.toString(method.getModifiers() ^ Modifier.ABSTRACT))
@@ -169,7 +169,7 @@ public class BeanBuilder extends ClassBuilder {
                                       .append("; }")
                                       .toString();
 
-        trace("Generated: %s ", body);
+        log.trace("Generated: %s ", body);
 
         CtMethod getter = CtMethod.make(body, concreteClass);
         concreteClass.addMethod(getter);

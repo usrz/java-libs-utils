@@ -23,6 +23,8 @@ import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.usrz.libs.logging.Log;
+
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonLocation;
 import com.fasterxml.jackson.core.JsonParseException;
@@ -43,6 +45,8 @@ public class JsonConfigurations extends Configurations {
     private static final Charset UTF8 = Charset.forName("UTF8");
     /* Our JSON factory, to create parsers from */
     private static final JsonFactory JSON_FACTORY;
+    /* Our JSON factory, to create parsers from */
+    private static final Log LOG = new Log();
 
     /* Initialize our JSON factory */
     static {
@@ -115,7 +119,6 @@ public class JsonConfigurations extends Configurations {
 
         /* Return our JSON as a string */
         final String json = builder.append(LINE_SEPARATOR).append('}').toString();
-        System.err.println(json);
 
         /* Build our Map holding the various configurations items */
         final Map<String, Object> configurations = new HashMap<>();
@@ -155,7 +158,7 @@ public class JsonConfigurations extends Configurations {
                     case NOT_AVAILABLE:
                     case VALUE_EMBEDDED_OBJECT:
                     default:
-                        System.err.println("Unsupported token " + token);
+                        LOG.warn("Unsupported token \"%s\" parsing JSON", token);
                 }
             }
 

@@ -17,8 +17,8 @@ package org.usrz.libs.utils.beans;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.usrz.libs.logging.Log;
 
 /**
  * A <em>convenience</em> utility to create instances from {@link Class}es.
@@ -33,7 +33,7 @@ import java.util.logging.Logger;
 public class InstanceBuilder {
 
     /* Logger */
-    private static final Logger logger = Logger.getLogger(InstanceBuilder.class.getName());
+    private static final Log log = new Log();
 
     /* ====================================================================== */
 
@@ -77,8 +77,7 @@ public class InstanceBuilder {
 
         try {
             final Constructor<?> constructor = concreteClass.getConstructor(classes);
-            if (logger.isLoggable(Level.FINE))
-                logger.fine("Creating new instance of " + concreteClass.getName() + " with " + constructor);
+            log.trace("Creating new instance of %s with %s", concreteClass.getName(), constructor);
             constructor.setAccessible(true);
             return (T) constructor.newInstance(parameters);
 
@@ -96,8 +95,7 @@ public class InstanceBuilder {
         try {
             for (Constructor<?> constructor: concreteClass.getDeclaredConstructors()) {
                 if (isAssignable(constructor.getParameterTypes(), parameters)) {
-                    if (logger.isLoggable(Level.FINE))
-                        logger.fine("Creating new instance of " + concreteClass.getName() + " with " + constructor);
+                    log.trace("Creating new instance of %s with %s", concreteClass.getName(), constructor);
                     constructor.setAccessible(true);
                     return (T) constructor.newInstance(parameters);
                 }
