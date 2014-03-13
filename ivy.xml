@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ivy-module version="2.0">
 
-  <info organisation="org.usrz.libs" module="utils" revision="0.1.3"/>
+  <info organisation="org.usrz.libs" module="utils" revision="0.2.0"/>
 
   <configurations>
-    <conf name="default"        visibility="public"/>
-    <conf name="beans"          visibility="public"  extends="default"/>
-    <conf name="configurations" visibility="public"  extends="default"/>
-    <conf name="compile"        visibility="private" extends="beans,configurations"/>
-    <conf name="testing"        visibility="private" extends="compile"/>
+    <conf name="default" visibility="public"/>
+    <conf name="beans" visibility="public" extends="default"/>
+    <conf name="configurations" visibility="public" extends="default"/>
+    <conf name="compile" visibility="private" extends="beans,configurations"/>
+    <conf name="testing" visibility="private" extends="compile"/>
   </configurations>
 
   <publications>
