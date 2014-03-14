@@ -155,10 +155,30 @@ public class MapperBuilder extends ClassBuilder {
                                              .append(method.getName())
                                              .append('(')
                                              .append(parameterType.getName())
-                                             .append(" value) { this._mappedProperties.put(\"")
-                                             .append(fieldName)
-                                             .append("\", ");
+                                             .append(" value) { ");
 
+        /* Nullability checks */
+        if (method.hasAnnotation(NotNullable.class)) {
+            if (parameterType.isPrimitive()) {
+                throw exception("Unable to check for nullablility of primitives in " + method);
+            } else {
+                body.append(" if (value == null) { throw new IllegalArgumentException(\"Invalid null value for \\\"")
+                    .append(fieldName)
+                    .append("\\\" field\"); } ");
+            }
+        }
+
+        /* Bean values protection */
+        if (method.hasAnnotation(Protected.class)) {
+            body.append(" if (this._mappedProperties.containsKey(\"")
+                .append(fieldName)
+                .append("\")) { throw new IllegalStateException(\"Protected field \\\"")
+                .append(fieldName)
+                .append("\\\" already assigned\"); } ");
+        }
+
+        /* Assignment */
+        body.append("this._mappedProperties.put(\"").append(fieldName).append("\", ");
         if (parameterType.isPrimitive()) {
             switch (parameterType.getName()) {
                 case "boolean": body.append("new java.lang.Boolean(");   break;

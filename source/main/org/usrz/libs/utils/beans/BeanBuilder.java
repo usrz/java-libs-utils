@@ -22,7 +22,11 @@ import javassist.CtField;
 import javassist.CtMethod;
 import javassist.Modifier;
 import javassist.NotFoundException;
+import javassist.bytecode.AnnotationsAttribute;
+import javassist.bytecode.ClassFile;
+import javassist.bytecode.ConstPool;
 import javassist.bytecode.analysis.Type;
+import javassist.bytecode.annotation.Annotation;
 
 import com.google.inject.Inject;
 
@@ -100,6 +104,15 @@ public class BeanBuilder extends ClassBuilder {
             log.trace("Skipping existing field \"%s\" declaration instrumenting setter %s", fieldName, method.getName());
         } catch (NotFoundException exception) {
             final CtField newField = new CtField(parameterType, fieldName, concreteClass);
+
+            /* Add a "@JsonIgnore" attribute (helps Jackson) */
+            final ClassFile cf = concreteClass.getClassFile();
+            final ConstPool cp = cf.getConstPool();
+            final AnnotationsAttribute attr = new AnnotationsAttribute(cp, AnnotationsAttribute.visibleTag);
+            attr.setAnnotation(new Annotation("com.fasterxml.jackson.annotation.JsonIgnore", cp));
+            newField.getFieldInfo().addAttribute(attr);
+
+            /* Add the field and proceed */
             concreteClass.addField(newField);
             log.trace("Adding field \"%s\" of type %s instrumenting setter %s", fieldName, parameterType, method.getName());
         }
@@ -122,9 +135,33 @@ public class BeanBuilder extends ClassBuilder {
                                              .append(method.getName())
                                              .append('(')
                                              .append(parameterType.getName())
-                                             .append(" value) { this.")
-                                             .append(fieldName)
-                                             .append(" = value; ");
+                                             .append(" value) { ");
+
+        /* Nullability checks */
+        if (method.hasAnnotation(NotNullable.class)) {
+            if (parameterType.isPrimitive()) {
+                throw exception("Unable to check for nullablility of primitives in " + method);
+            } else {
+                body.append(" if (value == null) { throw new IllegalArgumentException(\"Invalid null value for \\\"")
+                    .append(fieldName)
+                    .append("\\\" field\"); } ");
+            }
+        }
+
+        /* Bean values protection */
+        if (method.hasAnnotation(Protected.class)) {
+            if (parameterType.isPrimitive()) {
+                throw exception("Unable to protect primitive setter " + method);
+            } else {
+                body.append(" if (this.")
+                    .append(fieldName)
+                    .append(" != null) { throw new IllegalStateException(\"Protected field \\\"")
+                    .append(fieldName)
+                    .append("\\\" already assigned\"); } ");
+            }
+        }
+
+        body.append("this.").append(fieldName).append(" = value; ");
         if (returnThis) body.append("return this; ");
         body.append('}');
 

@@ -189,6 +189,7 @@ public abstract class ClassBuilder {
     CtClass createClass(String className, CtClass superClass)
     throws NotFoundException, CannotCompileException {
         final CtClass generated = classPool.makeClass(className, superClass);
+        generated.getClassFile().setVersionToJava5();
 
         /* Process constructors for the super class */
         for (CtConstructor superConstructor: superClass.getConstructors()) {
@@ -251,7 +252,7 @@ public abstract class ClassBuilder {
         } else {
 
             /* If the class to implement is an (?) abstract, extend it */
-            final CtClass superClass = classPool.getCtClass(abstractClass.getName());
+            final CtClass superClass = classPool.get(abstractClass.getName());
             concreteClass = createClass(className, superClass);
 
             /* Instrument all abstract methods from the super class */
