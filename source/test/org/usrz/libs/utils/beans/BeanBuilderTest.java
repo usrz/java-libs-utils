@@ -79,7 +79,7 @@ public class BeanBuilderTest extends AbstractTest {
     throws Exception {
         final SettableBean bean = InstanceBuilder.newInstance(builder.<SettableBean>newClass(SettableBean.class));
 
-        final Field field = bean.getClass().getDeclaredField("myValue");
+        final Field field = bean.getClass().getDeclaredField("__myValue__");
 
         assertEquals(String.class, field.getType());
 
@@ -98,7 +98,7 @@ public class BeanBuilderTest extends AbstractTest {
     throws Exception {
         final GettableBean bean = InstanceBuilder.newInstance(builder.<GettableBean>newClass(GettableBean.class));
 
-        final Field field = bean.getClass().getDeclaredField("myValue");
+        final Field field = bean.getClass().getDeclaredField("__myValue__");
 
         assertEquals(String.class, field.getType());
 
@@ -181,7 +181,7 @@ public class BeanBuilderTest extends AbstractTest {
     }
 
     @Test(expectedExceptions=IllegalStateException.class,
-          expectedExceptionsMessageRegExp="^Field \"value\" types mismatch.*")
+          expectedExceptionsMessageRegExp="^Field \"__value__\" types mismatch.*")
     public void testIncompatibleInterfaces() {
         InstanceBuilder.newInstance(builder.newClass(SimpleBean.class, IncompatibleBean.class));
     }

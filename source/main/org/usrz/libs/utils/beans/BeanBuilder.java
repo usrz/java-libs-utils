@@ -94,6 +94,7 @@ public class BeanBuilder extends ClassBuilder {
         log.trace("Instrumenting setter %s", method);
 
         final CtClass parameterType = method.getParameterTypes()[0];
+        fieldName = "__" + fieldName + "__";
 
         try {
             final CtField oldField = concreteClass.getField(fieldName);
@@ -142,9 +143,11 @@ public class BeanBuilder extends ClassBuilder {
             if (parameterType.isPrimitive()) {
                 throw exception("Unable to check for nullablility of primitives in " + method);
             } else {
-                body.append(" if (value == null) { throw new IllegalArgumentException(\"Invalid null value for \\\"")
-                    .append(fieldName)
-                    .append("\\\" field\"); } ");
+                body.append(" if (value == null) { throw new IllegalArgumentException(\"Invalid null value for setter \\\"")
+                    .append(method.getName())
+                    .append('(')
+                    .append(parameterType.getSimpleName())
+                    .append(")\\\"\"); } ");
             }
         }
 
@@ -155,9 +158,11 @@ public class BeanBuilder extends ClassBuilder {
             } else {
                 body.append(" if (this.")
                     .append(fieldName)
-                    .append(" != null) { throw new IllegalStateException(\"Protected field \\\"")
-                    .append(fieldName)
-                    .append("\\\" already assigned\"); } ");
+                    .append(" != null) { throw new IllegalStateException(\"Protected setter \\\"")
+                    .append(method.getName())
+                    .append('(')
+                    .append(parameterType.getSimpleName())
+                    .append(")\\\" already invoked\"); } ");
             }
         }
 
@@ -183,6 +188,7 @@ public class BeanBuilder extends ClassBuilder {
         log.trace("Instrumenting getter %s", method);
 
         final CtClass returnType = method.getReturnType();
+        fieldName = "__" + fieldName + "__";
         try {
             final CtField oldField = concreteClass.getField(fieldName);
             if (!oldField.getType().equals(returnType))

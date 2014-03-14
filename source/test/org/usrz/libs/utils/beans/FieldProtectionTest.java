@@ -36,7 +36,7 @@ public class FieldProtectionTest extends AbstractTest {
             bean.setProtectedValue(null);
             fail("Exception not thrown");
         } catch (IllegalArgumentException exception) {
-            assertEquals(exception.getMessage(), "Invalid null value for \"protectedValue\" field");
+            assertEquals(exception.getMessage(), "Invalid null value for setter \"setProtectedValue(String)\"");
         }
 
         assertNull(bean.getNormalValue());
@@ -54,7 +54,7 @@ public class FieldProtectionTest extends AbstractTest {
             bean.setProtectedValue("baz");
             fail("Exception not thrown");
         } catch (IllegalStateException exception) {
-            assertEquals(exception.getMessage(), "Protected field \"protectedValue\" already assigned");
+            assertEquals(exception.getMessage(), "Protected setter \"setProtectedValue(String)\" already invoked");
         }
 
         assertEquals(bean.getNormalValue(), "baz");
@@ -66,7 +66,7 @@ public class FieldProtectionTest extends AbstractTest {
             bean.setProtectedValue(null);
             fail("Exception not thrown");
         } catch (IllegalArgumentException exception) {
-            assertEquals(exception.getMessage(), "Invalid null value for \"protectedValue\" field");
+            assertEquals(exception.getMessage(), "Invalid null value for setter \"setProtectedValue(String)\"");
         }
 
         assertEquals(bean.getNormalValue(), null);

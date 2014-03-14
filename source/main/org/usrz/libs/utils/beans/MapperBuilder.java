@@ -24,7 +24,11 @@ import javassist.CtField;
 import javassist.CtMethod;
 import javassist.Modifier;
 import javassist.NotFoundException;
+import javassist.bytecode.AnnotationsAttribute;
+import javassist.bytecode.ClassFile;
+import javassist.bytecode.ConstPool;
 import javassist.bytecode.analysis.Type;
+import javassist.bytecode.annotation.Annotation;
 
 import com.google.inject.Inject;
 
@@ -115,11 +119,20 @@ public class MapperBuilder extends ClassBuilder {
         concreteClass.addInterface(mapperClass);
 
         final CtMethod method = mapperClass.getMethod("mappedProperties", "()Ljava/util/Map;");
-        beanBuilder.createGetter(concreteClass, method, "_mappedProperties");
+        beanBuilder.createGetter(concreteClass, method, "mapped__properties");
 
-        final CtField uninitialized = concreteClass.getField("_mappedProperties");
-        final CtField initialized = CtField.make("private final java.util.Map _mappedProperties = new java.util.HashMap();", concreteClass);
+        final CtField uninitialized = concreteClass.getField("__mapped__properties__");
+        final CtField initialized = CtField.make("private final java.util.Map __mapped__properties__ = new java.util.HashMap();", concreteClass);
         concreteClass.removeField(uninitialized);
+
+        /* Add a "@JsonIgnore" attribute (helps Jackson) */
+        final ClassFile cf = concreteClass.getClassFile();
+        final ConstPool cp = cf.getConstPool();
+        final AnnotationsAttribute attr = new AnnotationsAttribute(cp, AnnotationsAttribute.visibleTag);
+        attr.setAnnotation(new Annotation("com.fasterxml.jackson.annotation.JsonIgnore", cp));
+        initialized.getFieldInfo().addAttribute(attr);
+
+        /* Add the field and return */
         concreteClass.addField(initialized);
 
         return concreteClass;
@@ -162,23 +175,27 @@ public class MapperBuilder extends ClassBuilder {
             if (parameterType.isPrimitive()) {
                 throw exception("Unable to check for nullablility of primitives in " + method);
             } else {
-                body.append(" if (value == null) { throw new IllegalArgumentException(\"Invalid null value for \\\"")
-                    .append(fieldName)
-                    .append("\\\" field\"); } ");
+                body.append(" if (value == null) { throw new IllegalArgumentException(\"Invalid null value for setter \\\"")
+                    .append(method.getName())
+                    .append('(')
+                    .append(parameterType.getSimpleName())
+                    .append(")\\\"\"); } ");
             }
         }
 
         /* Bean values protection */
         if (method.hasAnnotation(Protected.class)) {
-            body.append(" if (this._mappedProperties.containsKey(\"")
+            body.append(" if (this.__mapped__properties__.containsKey(\"")
                 .append(fieldName)
-                .append("\")) { throw new IllegalStateException(\"Protected field \\\"")
-                .append(fieldName)
-                .append("\\\" already assigned\"); } ");
+                .append("\")) { throw new IllegalStateException(\"Protected setter \\\"")
+                .append(method.getName())
+                .append('(')
+                .append(parameterType.getSimpleName())
+                .append(")\\\" already invoked\"); } ");
         }
 
         /* Assignment */
-        body.append("this._mappedProperties.put(\"").append(fieldName).append("\", ");
+        body.append("this.__mapped__properties__.put(\"").append(fieldName).append("\", ");
         if (parameterType.isPrimitive()) {
             switch (parameterType.getName()) {
                 case "boolean": body.append("new java.lang.Boolean(");   break;
@@ -240,7 +257,7 @@ public class MapperBuilder extends ClassBuilder {
             body.append("(").append(returnType.getName()).append(')');
         }
 
-        body.append("this._mappedProperties.get(\"")
+        body.append("this.__mapped__properties__.get(\"")
             .append(fieldName)
             .append("\")");
 

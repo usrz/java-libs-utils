@@ -17,7 +17,7 @@ package org.usrz.libs.utils.beans;
 
 public abstract class BridgeClass implements BridgeInterface<String> {
 
-    protected String generic;
+    protected String __generic__;
 
     @Override
     public abstract String getGeneric();
@@ -25,7 +25,7 @@ public abstract class BridgeClass implements BridgeInterface<String> {
     public abstract void setGeneric(String generic);
 
     protected void overrideGeneric(String generic) {
-        this.generic = generic;
+        __generic__ = generic;
     }
 
 }
