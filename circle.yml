@@ -17,14 +17,4 @@ deployment:
       - ant publish
           -Dtask.executed.test=true
           -Divy.useCacheOnly=true
-          -Divy.publications="${CIRCLE_ARTIFACTS}"
-          -Divy.dirPattern="."
-  release:
-    branch: release
-    commands:
-      - ant publish
-          -Dtask.executed.test=true
-          -Divy.status=release
-          -Divy.useCacheOnly=true
-          -Divy.publications="${CIRCLE_ARTIFACTS}"
-          -Divy.dirPattern="."
+      - (cd target/publications && scp -r . circleci@dev.usrz.com:integration)
