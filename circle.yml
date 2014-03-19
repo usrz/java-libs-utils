@@ -10,8 +10,21 @@ dependencies:
 test:
   override:
     - ant test -Divy.useCacheOnly=true
-deploy:
+deployment:
   integration:
     branch: master
     commands:
-      - ant -Divy.publications="${CIRCLE_ARTIFACTS}" -Divy.dirPattern=. -Dtask.executed.test=true publish
+      - ant publish
+          -Dtask.executed.test=true
+          -Divy.useCacheOnly=true
+          -Divy.publications="${CIRCLE_ARTIFACTS}"
+          -Divy.dirPattern="."
+  release:
+    branch: release
+    commands:
+      - ant publish
+          -Dtask.executed.test=true
+          -Divy.status=release
+          -Divy.useCacheOnly=true
+          -Divy.publications="${CIRCLE_ARTIFACTS}"
+          -Divy.dirPattern="."
