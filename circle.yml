@@ -18,4 +18,4 @@ deployment:
           -Dtask.executed.test=true
           -Divy.useCacheOnly=true
           -Divy.status=release
-      - (cd target/publications && scp -r . circleci@dev.usrz.com:release)
+      - (cd target/publications && scp -r . circleci@dev.usrz.com:releases)
