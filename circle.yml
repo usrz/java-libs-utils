@@ -1,7 +1,11 @@
+dependencies:
+  cache_directories:
+    - ~/.ivycache-usrz
 checkout:
   post:
     - git submodule sync
     - git submodule update --init
+    - ant resolve
 test:
   override:
     - ant test
