@@ -83,28 +83,19 @@ public class BeanBuilder extends ClassBuilder {
 
     /* ====================================================================== */
 
-    /**
-     * Create a setter method and (if not available) a related field to store
-     * the value into.
-     */
-    @Override
-    CtMethod createSetter(CtClass concreteClass, CtMethod method, String fieldName)
-    throws NotFoundException, CannotCompileException {
-
-        log.trace("Instrumenting setter %s", method);
-
-        final CtClass parameterType = method.getParameterTypes()[0];
-        fieldName = "__" + fieldName + "__";
-
+    CtField createField(CtClass concreteClass, CtMethod method, String fieldName, CtClass fieldType)
+    throws CannotCompileException {
         try {
             final CtField oldField = concreteClass.getField(fieldName);
-            if (!oldField.getType().equals(parameterType))
+            if (!oldField.getType().equals(fieldType))
                 throw exception("Field \"%s\" types mismatch: expected %s but found %s",
-                                fieldName, parameterType, oldField.getType());
+                                fieldName, fieldType, oldField.getType());
 
-            log.trace("Skipping existing field \"%s\" declaration instrumenting setter %s", fieldName, method.getName());
+            log.trace("Skipping existing field \"%s\" declaration instrumenting method %s", fieldName, method.getName());
+            return oldField;
+
         } catch (NotFoundException exception) {
-            final CtField newField = new CtField(parameterType, fieldName, concreteClass);
+            final CtField newField = new CtField(fieldType, fieldName, concreteClass);
 
             /* Add a "@JsonIgnore" attribute (helps Jackson) */
             final ClassFile cf = concreteClass.getClassFile();
@@ -115,8 +106,24 @@ public class BeanBuilder extends ClassBuilder {
 
             /* Add the field and proceed */
             concreteClass.addField(newField);
-            log.trace("Adding field \"%s\" of type %s instrumenting setter %s", fieldName, parameterType, method.getName());
+            log.trace("Adding field \"%s\" of type %s instrumenting method %s", fieldName, fieldType, method.getName());
+            return newField;
         }
+    }
+
+    /**
+     * Create a setter method and (if not available) a related field to store
+     * the value into.
+     */
+    @Override
+    CtMethod createSetter(CtClass concreteClass, CtMethod method, String fieldName)
+    throws NotFoundException, CannotCompileException {
+
+        log.trace("Instrumenting setter %s", method);
+
+        fieldName = "__" + fieldName + "__";
+        final CtClass parameterType = method.getParameterTypes()[0];
+        createField(concreteClass, method, fieldName, parameterType);
 
         final Type returnType = Type.get(method.getReturnType());
         final Type concreteType = Type.get(concreteClass);
@@ -187,20 +194,9 @@ public class BeanBuilder extends ClassBuilder {
 
         log.trace("Instrumenting getter %s", method);
 
-        final CtClass returnType = method.getReturnType();
         fieldName = "__" + fieldName + "__";
-        try {
-            final CtField oldField = concreteClass.getField(fieldName);
-            if (!oldField.getType().equals(returnType))
-                throw exception("Field \"%s\" types mismatch: expected %s but found %s",
-                                fieldName, returnType, oldField.getType());
-            log.trace("Skipping existing field \"%s\" declaration instrumenting getter %s", fieldName, method.getName());
-        } catch (NotFoundException exception) {
-            final CtField newField = new CtField(returnType, fieldName, concreteClass);
-            newField.setModifiers(Modifier.PUBLIC);
-            concreteClass.addField(newField);
-            log.trace("Adding field \"%s\" of type %s instrumenting getter %s", fieldName, returnType, method.getName());
-        }
+        final CtClass returnType = method.getReturnType();
+        createField(concreteClass, method, fieldName, returnType);
 
         final String body = new StringBuilder(Modifier.toString(method.getModifiers() ^ Modifier.ABSTRACT))
                                       .append(' ')
