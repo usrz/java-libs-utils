@@ -1,11 +1,12 @@
-dependencies:
-  cache_directories:
-    - ~/.ivycache-usrz
 checkout:
   post:
     - git submodule sync
     - git submodule update --init
-    - ant resolve
+dependencies:
+  override:
+    - ant resolve -Divy.useCacheOnly=false
+  cache_directories:
+    - ~/.ivycache-usrz
 test:
   override:
-    - ant test
+    - ant test -Divy.useCacheOnly=true
