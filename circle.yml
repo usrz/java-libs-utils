@@ -11,10 +11,11 @@ test:
   override:
     - ant test -Divy.useCacheOnly=true
 deployment:
-  integration:
-    branch: master
+  release:
+    branch: release
     commands:
       - ant publish
           -Dtask.executed.test=true
           -Divy.useCacheOnly=true
-      - (cd target/publications && scp -r . circleci@dev.usrz.com:integration)
+          -Divy.status=release
+      - (cd target/publications && scp -r . circleci@dev.usrz.com:release)
