@@ -10,3 +10,8 @@ dependencies:
 test:
   override:
     - ant test -Divy.useCacheOnly=true
+deploy:
+  integration:
+    branch: master
+    commands:
+      - ant -Divy.publications="${CIRCLE_ARTIFACTS}" -Divy.dirPattern=. -Dtask.executed.test=true publish
