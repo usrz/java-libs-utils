@@ -17,8 +17,9 @@ package org.usrz.libs.utils.beans;
 
 import javassist.ClassPool;
 
+import javax.inject.Inject;
+
 import com.google.inject.Binder;
-import com.google.inject.Inject;
 import com.google.inject.Key;
 import com.google.inject.Module;
 import com.google.inject.Provider;

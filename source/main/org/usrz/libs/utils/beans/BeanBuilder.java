@@ -28,7 +28,7 @@ import javassist.bytecode.ConstPool;
 import javassist.bytecode.analysis.Type;
 import javassist.bytecode.annotation.Annotation;
 
-import com.google.inject.Inject;
+import javax.inject.Inject;
 
 /**
  * A {@link BeanBuilder} is a {@link ClassBuilder} creating getters and setters

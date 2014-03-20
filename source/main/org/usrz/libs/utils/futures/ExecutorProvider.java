@@ -23,9 +23,10 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.inject.Inject;
+
 import org.usrz.libs.utils.configurations.Configurations;
 
-import com.google.inject.Inject;
 import com.google.inject.Provider;
 
 public class ExecutorProvider implements Provider<ExecutorService> {

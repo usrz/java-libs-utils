@@ -30,7 +30,8 @@ import javassist.bytecode.ConstPool;
 import javassist.bytecode.analysis.Type;
 import javassist.bytecode.annotation.Annotation;
 
-import com.google.inject.Inject;
+import javax.inject.Inject;
+
 
 /**
  * A {@link MapperBuilder} in a similar fashion to a {@link BeanBuilder} but
