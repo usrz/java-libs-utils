@@ -44,7 +44,7 @@ public class ContextBuilder {
      *
      * This is equivalent to <code>new ContextBuilder().with(k, v);</code>.
      */
-    public ContextBuilder(String key, String value) {
+    public ContextBuilder(String key, Object value) {
         with(key, value);
     }
 
