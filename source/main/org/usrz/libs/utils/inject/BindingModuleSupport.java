@@ -15,36 +15,38 @@
  * ========================================================================== */
 package org.usrz.libs.utils.inject;
 
-import com.google.inject.Binder;
+import com.google.inject.Key;
 import com.google.inject.Module;
+import com.google.inject.TypeLiteral;
+import com.google.inject.binder.AnnotatedBindingBuilder;
+import com.google.inject.binder.AnnotatedConstantBindingBuilder;
+import com.google.inject.binder.LinkedBindingBuilder;
 
-public abstract class ModuleSupport implements Module {
 
-    private final ThreadLocal<Binder> binder = new ThreadLocal<Binder>();
+public abstract class BindingModuleSupport extends ModuleSupport {
 
-    protected ModuleSupport() {
+    protected BindingModuleSupport() {
         /* Nothing to do */
     }
 
-    @Override
-    public void configure(Binder binder) {
-        if (binder == null) throw new NullPointerException("Null binder");
-        if (this.binder.get() != null) {
-            throw new IllegalStateException("Binder already specified in current thread");
-        } else try {
-            this.binder.set(binder);
-            this.configure();
-        } finally {
-            this.binder.remove();
-        }
+    protected <T> LinkedBindingBuilder<T> bind(Key<T> key) {
+        return binder().bind(key);
     }
 
-    protected abstract void configure();
+    protected <T> AnnotatedBindingBuilder<T> bind(TypeLiteral<T> typeLiteral) {
+        return binder().bind(typeLiteral);
+    }
 
-    protected final Binder binder() {
-        final Binder binder = this.binder.get();
-        if (binder == null) throw new IllegalStateException("No binder available");
-        return binder;
+    protected <T> AnnotatedBindingBuilder<T> bind(Class<T> type) {
+        return binder().bind(type);
+    }
+
+    protected AnnotatedConstantBindingBuilder bindConstant() {
+        return binder().bindConstant();
+    }
+
+    protected void install(Module... modules) {
+        for (Module module: modules) binder().install(module);
     }
 
 }
