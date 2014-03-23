@@ -13,22 +13,14 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * ========================================================================== */
-package org.usrz.libs.utils.configurations;
+package org.usrz.libs.utils.caches;
 
-import com.google.inject.Binder;
-import com.google.inject.Module;
+public interface Cache<K, V> {
 
-public class ConfigurationsModule implements Module {
+    public V get(K key);
 
-    private final Configurations configurations;
+    public void put(K key, V value);
 
-    public ConfigurationsModule(Configurations configurations) {
-        this.configurations = configurations;
-    }
-
-    @Override
-    public void configure(Binder binder) {
-        binder.bind(Configurations.class).toInstance(configurations);
-    }
+    public void invalidate(K key);
 
 }

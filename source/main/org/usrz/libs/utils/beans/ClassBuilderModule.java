@@ -19,6 +19,8 @@ import javassist.ClassPool;
 
 import javax.inject.Inject;
 
+import org.usrz.libs.utils.inject.ModuleSupport;
+
 import com.google.inject.Binder;
 import com.google.inject.Key;
 import com.google.inject.Module;
@@ -31,10 +33,7 @@ import com.google.inject.TypeLiteral;
  *
  * @author <a href="mailto:pier@usrz.com">Pier Fumagalli</a>
  */
-public abstract class ClassBuilderModule implements Module {
-
-    /* Our binder reference */
-    final ThreadLocal<Binder> binder = new ThreadLocal<>();
+public abstract class ClassBuilderModule extends ModuleSupport {
 
     /**
      * Create a new {@link ClassBuilderModule} instance.
@@ -51,19 +50,8 @@ public abstract class ClassBuilderModule implements Module {
         binder.bind(ClassPool.class).toInstance(ClassPool.getDefault());
         binder.bind(BeanBuilder.class);
         binder.bind(MapperBuilder.class);
-        this.binder.set(binder);
-        try {
-            this.configure();
-        } finally {
-            this.binder.remove();
-        }
+        super.configure(binder);
     }
-
-    /**
-     * Overridden by concrete implementations of this {@link Module} to
-     * bind {@link Class} types to their concrete (constructed) types.
-     */
-    protected abstract void configure();
 
     /**
      * Define the mapping for the specified {@link Class} {@link TypeLiteral}
@@ -102,7 +90,7 @@ public abstract class ClassBuilderModule implements Module {
          * @see BeanBuilder#newClass(Class, Class...)
          */
         public void toBean(Class<?> abstractClass, Class<?>... interfaces) {
-            binder.get().bind(key).toProvider(new BeanClassProvider<C>(abstractClass, interfaces));
+            binder().bind(key).toProvider(new BeanClassProvider<C>(abstractClass, interfaces));
         }
 
         /**
@@ -111,7 +99,7 @@ public abstract class ClassBuilderModule implements Module {
          * @see MapperBuilder#newClass(Class, Class...)
          */
         public void toMapperBean(Class<?> abstractClass, Class<?>... interfaces) {
-            binder.get().bind(key).toProvider(new MapperClassProvider<C>(abstractClass, interfaces));
+            binder().bind(key).toProvider(new MapperClassProvider<C>(abstractClass, interfaces));
         }
 
     }
