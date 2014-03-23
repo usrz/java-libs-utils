@@ -1,28 +1,30 @@
-server: {
-  listener: {
-    name: "listname",
-    port: 8080,
-    secure: true
+{
+  server: {
+    listener: {
+      name: "listname",
+      port: 8080,
+      secure: true
+    },
+    "dotted.key": {
+      value: "some value",
+      foo: "bar"
+    },
+    applications: [ {
+        name: "first",
+        value: 1
+      }, {
+        name: "second",
+        value: 2
+      }, {
+        name: "third",
+        value: 3
+      }
+    ],
+    count: [ 1, 2, 3 ],
+    message: "hello world"
   },
-  "dotted.key": {
-    value: "some value",
-    foo: "bar"
-  },
-  applications: [ {
-      name: "first",
-      value: 1
-    }, {
-      name: "second",
-      value: 2
-    }, {
-      name: "third",
-      value: 3
-    }
-  ],
-  count: [ 1, 2, 3 ],
-  message: "hello world"
-},
 
-mongo: {
-  foo: "bar"
+  mongo: {
+    foo: "bar"
+  }
 }

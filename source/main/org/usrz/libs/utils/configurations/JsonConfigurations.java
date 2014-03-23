@@ -94,14 +94,14 @@ public class JsonConfigurations extends Configurations {
         if (reader == null) throw new NullPointerException("Null reader");
 
         /* Read our JSON fully, wrapping it in a { json } structure */
-        final StringBuilder builder = new StringBuilder("callback.invoke({").append(LINE_SEPARATOR);
+        final StringBuilder builder = new StringBuilder("callback.invoke(").append(LINE_SEPARATOR);
         final char[] buffer = new char[4096];
         int read = -1;
         while ((read = reader.read(buffer)) >= 0) {
             if (read > 0) builder.append(buffer, 0, read);
         }
 
-        builder.append("});");
+        builder.append(");");
 
         System.err.println(builder.toString());
 
