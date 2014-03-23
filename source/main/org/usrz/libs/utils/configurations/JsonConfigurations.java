@@ -103,8 +103,6 @@ public class JsonConfigurations extends Configurations {
 
         builder.append(");");
 
-        System.err.println(builder.toString());
-
         /* We can use the built-in JavaScript interpreter to parse this JSON */
         try {
             final ScriptEngineManager manager = new ScriptEngineManager();
