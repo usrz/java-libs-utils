@@ -18,11 +18,6 @@ package org.usrz.libs.utils.configurations;
 import org.testng.annotations.Test;
 import org.usrz.libs.testing.AbstractTest;
 import org.usrz.libs.testing.IO;
-import org.usrz.libs.utils.configurations.Configurations;
-import org.usrz.libs.utils.configurations.ConfigurationsBuilder;
-import org.usrz.libs.utils.configurations.ConfigurationsException;
-import org.usrz.libs.utils.configurations.JsonConfigurations;
-import org.usrz.libs.utils.configurations.ResourceConfigurations;
 
 public class JsonConfigurationsTest extends AbstractTest {
 
@@ -36,9 +31,9 @@ public class JsonConfigurationsTest extends AbstractTest {
                         .put("server.applications.1.value", 2)
                         .put("server.applications.2.name", "third")
                         .put("server.applications.2.value", 3)
-                        .put("server.count.1", 1)
-                        .put("server.count.2", 2)
-                        .put("server.count.3", 3)
+                        .put("server.count.0", 1)
+                        .put("server.count.1", 2)
+                        .put("server.count.2", 3)
                         .put("server.dotted.key.foo", "bar")
                         .put("server.dotted.key.value", "some value")
                         .put("server.listener.name", "listname")
@@ -59,14 +54,12 @@ public class JsonConfigurationsTest extends AbstractTest {
     public void testJsonWrongKey()
     throws Exception {
         try {
-            new ResourceConfigurations("wrongkey.json");
+            new ResourceConfigurations("wrongkey.json").list(System.err);
             fail("Exception not thrown");
         } catch (IllegalArgumentException exception) {
             final ConfigurationsException wrapper = (ConfigurationsException) exception.getCause();
             assertEquals(exception.getMessage(), wrapper.getMessage());
             assertEquals(wrapper.getLocation(), this.getClass().getResource("wrongkey.json").toString());
-            assertEquals(wrapper.getLine(), 2);
-            assertEquals(wrapper.getColumn(), 3);
             throw exception;
         }
     }
