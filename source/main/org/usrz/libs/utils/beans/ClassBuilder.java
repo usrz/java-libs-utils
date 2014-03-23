@@ -38,8 +38,8 @@ import org.usrz.libs.logging.Log;
 /**
  * A {@link ClassBuilder} <em>automagically</em> creates getters and setters.
  *
- * <p>Pier says: <quote>"I'm tired of writing the same stupid boiler-place
- * code, all the time... It's F***ING BORING".</quote></p>
+ * <p>Pier says: <em>"I'm tired of writing the same stupid boiler-place
+ * code, all the time... It's F***ING BORING".</em></p>
  *
  * <p>Getters <b>must</b> conform to the naming convention <code>getFoo()</code>
  * or <code>isFoo()</code> and (obviously) they can <b>not</b> have

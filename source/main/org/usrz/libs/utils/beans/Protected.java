@@ -31,7 +31,7 @@ import java.lang.annotation.Target;
  *
  * <pre>
  * public interface MyBean {
- *   @Protected public void setValue(String value);
+ *   &#64;Protected public void setValue(String value);
  *   public String getValue();
  * }
  * </pre>

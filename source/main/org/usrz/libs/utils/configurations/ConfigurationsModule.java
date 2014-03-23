@@ -36,7 +36,7 @@ public abstract class ConfigurationsModule extends ModuleSupport {
             this.annotation = annotation;
         }
 
-        public ConfigurationsModule to(Configurations configurations) {
+        public ConfigurationsModule with(Configurations configurations) {
             if (configurations == null) throw new NullPointerException("Null configurations");
             binder().bind(Configurations.class).annotatedWith(annotation).toInstance(configurations);
             return ConfigurationsModule.this;

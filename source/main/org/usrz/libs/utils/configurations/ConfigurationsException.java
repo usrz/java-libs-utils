@@ -127,7 +127,7 @@ public class ConfigurationsException extends Exception {
     }
 
     /**
-     * Return an <em>unchecked</code> version of this exception.
+     * Return an <em>unchecked</em> version of this exception.
      */
     protected IllegalArgumentException unchecked() {
         return new IllegalArgumentException(getMessage(), this);

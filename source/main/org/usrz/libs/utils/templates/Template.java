@@ -40,7 +40,7 @@ import org.usrz.libs.utils.templates.TemplateParser.Token;
  *     the key <code><em>foo</em></code> from the context. If the specified key
  *     is not present in the context, this directive will be ignored.</li>
  * <li><code><b>@{foo}</b></code>: merge the sub-template identifed by the
- *     @{link URI} <code><em>foo</em></code>.</li>
+ *     {@link URI} <code><em>foo</em></code>.</li>
  * </ul>
  *
  * @author <a href="mailto:pier@usrz.com">Pier Fumagalli</a>

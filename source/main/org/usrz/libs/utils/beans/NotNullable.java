@@ -30,7 +30,7 @@ import java.lang.annotation.Target;
  *
  * <pre>
  * public interface MyBean {
- *   @NotNullable public void setValue(String value);
+ *   &#64;NotNullable public void setValue(String value);
  *   public String getValue();
  * }
  * </pre>

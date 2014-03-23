@@ -297,7 +297,7 @@ public class Configurations implements Map<String, String>, Cloneable {
 
     /**
      * Group mappings by prefix, and return a {@link Map} of
-     * <nobr><em>prefix -&gt; {@link Configurations}</em></nobr>.
+     * <code><em>prefix -&gt; {@link Configurations}</em></code>.
      *
      * <p>This method will group configuration items. Given mappings as:</p>
      *
@@ -355,7 +355,7 @@ public class Configurations implements Map<String, String>, Cloneable {
 
     /**
      * Group mappings by prefix, and return a {@link Map} of
-     * <nobr><em>prefix -&gt; {@link Configurations}</em></nobr> only
+     * <code><em>prefix -&gt; {@link Configurations}</em></code> only
      * for the specified groups.
      *
      * <p>This method will group configuration items like {@link #group(String)}
@@ -406,7 +406,7 @@ public class Configurations implements Map<String, String>, Cloneable {
 
     /**
      * Group mappings by prefix, and return a {@link Map} of
-     * <nobr><em>prefix -&gt; {@link Configurations}</em></nobr>, optionally
+     * <code><em>prefix -&gt; {@link Configurations}</em></code>, optionally
      * containing the group names specified as a value for the prefix.
      *
      * <p>When the <em>explicit</em> flag is <b>false</b> this method will
