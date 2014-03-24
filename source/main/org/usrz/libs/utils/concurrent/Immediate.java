@@ -13,21 +13,53 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * ========================================================================== */
-package org.usrz.libs.utils.futures;
+package org.usrz.libs.utils.concurrent;
 
-import java.util.Iterator;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.function.Consumer;
 
-public interface IterableFuture<T>
-extends Future<Iterator<T>>, Iterable<T>, Iterator<T> {
+public final class Immediate<T> implements NotifyingFuture<T> {
 
-    public boolean hasNext(long timeout, TimeUnit unit)
-    throws InterruptedException, TimeoutException;
+    private final T instance;
 
-    public T next(long timeout, TimeUnit unit)
-    throws InterruptedException, ExecutionException, TimeoutException;
+    private Immediate(T instance) {
+        this.instance = instance;
+    }
+
+    public static final <T> Immediate<T> immediate(T instance) {
+        return new Immediate<T>(instance);
+    }
+
+    @Override
+    public boolean cancel(boolean mayInterruptIfRunning) {
+        return false;
+    }
+
+    @Override
+    public boolean isCancelled() {
+        return false;
+    }
+
+    @Override
+    public boolean isDone() {
+        return true;
+    }
+
+    @Override
+    public T get() {
+        return instance;
+    }
+
+    @Override
+    public T get(long timeout, TimeUnit unit) {
+        return instance;
+    }
+
+    @Override
+    public Immediate<T> withConsumer(Consumer<Future<T>> consumer) {
+        consumer.accept(this);
+        return this;
+    }
 
 }

@@ -13,17 +13,13 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * ========================================================================== */
-package org.usrz.libs.utils.futures;
+package org.usrz.libs.utils.concurrent;
 
-public class UncheckedInterruptedException extends IllegalStateException {
+import java.util.concurrent.Future;
+import java.util.function.Consumer;
 
-    public UncheckedInterruptedException(InterruptedException exception) {
-        super(exception.getMessage(), exception);
-    }
+public interface Delegate<T> {
 
-    @Override
-    public InterruptedException getCause() {
-        return (InterruptedException) super.getCause();
-    }
+    public Delegate<T> withConsumer(Consumer<Future<T>> consumer);
 
 }

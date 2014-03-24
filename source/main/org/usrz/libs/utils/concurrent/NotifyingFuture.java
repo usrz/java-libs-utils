@@ -13,15 +13,14 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * ========================================================================== */
-package org.usrz.libs.utils.futures;
+package org.usrz.libs.utils.concurrent;
 
+import java.util.concurrent.Future;
+import java.util.function.Consumer;
 
-public interface Puttable<T> {
+public interface NotifyingFuture<T> extends Future<T>, Delegate<T> {
 
-    public boolean put(T instance);
-
-    public boolean fail(Throwable throwable);
-
-    public boolean close();
+    @Override
+    public NotifyingFuture<T> withConsumer(Consumer<Future<T>> consumer);
 
 }
