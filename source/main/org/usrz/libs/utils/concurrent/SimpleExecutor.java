@@ -48,7 +48,11 @@ public class SimpleExecutor {
         this.executor = Objects.requireNonNull(executor);
     }
 
-    public <T> NotifyingFuture<T> execute(Callable<T> callable) {
+    public <T> NotifyingFuture<?> run(Runnable runnable) {
+        return call(() -> { runnable.run(); return null; });
+    }
+
+    public <T> NotifyingFuture<T> call(Callable<T> callable) {
         return delegate(() -> immediate(callable.call()));
     }
 
