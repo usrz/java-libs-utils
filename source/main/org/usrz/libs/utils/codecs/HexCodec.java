@@ -24,7 +24,7 @@ import java.util.Arrays;
  * {@linkplain #HexCodec(boolean) construction} this class will always decode
  * {@link String}s using all possible alphabets.
  *
- * @see <a href="http://en.wikipedia.org/wiki/Hexadecimal">Hexadecimal</code>
+ * @see <a href="http://en.wikipedia.org/wiki/Hexadecimal">Hexadecimal</a>
  * @author <a href="mailto:pier@usrz.com">Pier Fumagalli</a>
  */
 public class HexCodec extends AbstractCodec {
