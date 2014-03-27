@@ -33,6 +33,13 @@ public class ConfigurationsException extends RuntimeException {
     }
 
     /**
+     * Create a new {@link ConfigurationsException} for the specified key.
+     */
+    protected ConfigurationsException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    /**
      * Initialize the location of this {@link ConfigurationsException}.
      */
     protected ConfigurationsException initLocation(String location) {
