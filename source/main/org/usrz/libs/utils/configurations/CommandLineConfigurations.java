@@ -18,6 +18,7 @@ package org.usrz.libs.utils.configurations;
 import static java.lang.Boolean.TRUE;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -53,19 +54,21 @@ import java.util.Map;
  *
  * @author <a href="mailto:pier@usrz.com">Pier Fumagalli</a>
  */
-public class CommandLineConfigurations extends Configurations {
+public class CommandLineConfigurations extends MappedConfigurations {
 
     /**
      * Create a new {@link CommandLineConfigurations} instance parsing the
      * specified arguments.
      */
-    public CommandLineConfigurations(String... arguments) {
-        super(parse(arguments), true);
+    public CommandLineConfigurations(String... arguments)
+    throws ConfigurationsException {
+        super(parse(arguments));
     }
 
     /* ====================================================================== */
 
-    private static Map<String, String> parse(String... arguments) {
+    private static Map<String, String> parse(String... arguments)
+    throws ConfigurationsException {
 
         /* Prepare our map where key/values will be stored into */
         final Map<String, String> configurations = new HashMap<>();
@@ -83,12 +86,7 @@ public class CommandLineConfigurations extends Configurations {
 
                 /* If we're looking at -Dyyy=zzz parse key and value */
                 else {
-                    final String key;
-                    try {
-                        key = validateKey(entry.substring(0, position));
-                    } catch (ConfigurationsException exception) {
-                        throw exception.unchecked();
-                    }
+                    final String key = entry.substring(0, position);
                     final String value = entry.substring(position + 1);
                     configurations.put(key, value);
                 }
@@ -97,9 +95,12 @@ public class CommandLineConfigurations extends Configurations {
             } else if (argument.startsWith("-")) {
                 throw new IllegalArgumentException("Invalid argument " + argument);
 
-            } else {
+            } else try {
                 /* Everything else is a reference to a properties file */
                 configurations.putAll(new FileConfigurations(new File(argument)));
+            } catch (IOException exception) {
+                throw new ConfigurationsException("I/O error parsing file from command line")
+                            .initLocation(argument).initCause(exception);
             }
         }
 

@@ -18,7 +18,6 @@ package org.usrz.libs.utils.configurations;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.Map;
 import java.util.Properties;
 
 import org.usrz.libs.logging.Log;
@@ -33,7 +32,7 @@ import org.usrz.libs.logging.Log;
  * which <b>must be</b> "<code>.json</code>" for JSON files, or either
  * "<code>.properties</code>" or "<code>.xml</code>" for properties files.</p>
  */
-public class FileConfigurations extends Configurations {
+public class FileConfigurations extends DelegateConfigurations {
 
     private static final Log log = new Log();
 
@@ -42,35 +41,34 @@ public class FileConfigurations extends Configurations {
      * {@link File}, either in <em>Java {@linkplain Properties properties}</em>
      * or <em><a href="http://json.org/">JSON</a></em> format.
      */
-    public FileConfigurations(File file) {
-        super(load(file), false);
+    public FileConfigurations(File file)
+    throws IOException, ConfigurationsException {
+        super(load(file));
     }
 
     /* ====================================================================== */
 
-    private static final Map<?, ?> load(File file) {
+    private static final Configurations load(File file)
+    throws IOException, ConfigurationsException {
         if (file == null) throw new NullPointerException("Null URL");
 
         log.debug("Parsing configurations from file %s", file);
 
         final String name = file.getAbsolutePath();
-        try {
-            if (!file.isFile())
-                throw new IllegalArgumentException("File " + name + " not found (or not a file)");
+        if (!file.isFile())
+            throw new IllegalArgumentException("File " + name + " not found (or not a file)");
 
-            final FileInputStream input = new FileInputStream(file);
+        final FileInputStream input = new FileInputStream(file);
+        try {
             if (name.endsWith(".json") || name.endsWith(".js"))
-                return JsonConfigurations.parse(input);
+                return new JsonConfigurations(input);
             else if (name.endsWith(".properties") || name.endsWith(".xml")) {
-                return PropertiesConfigurations.parse(input);
+                return new PropertiesConfigurations(input);
             } else {
-                input.close();
-                throw new IllegalArgumentException("File \"" + name + "\" must end with \".json\", \".properties\", or \".xml\"");
+                throw new IllegalArgumentException("Invalid file extension for \"" + name + "\"");
             }
-        } catch (ConfigurationsException exception) {
-            throw exception.initLocation(name).unchecked();
-        } catch (IOException exception) {
-            throw new IllegalStateException("I/O error parsing " + name);
+        } finally {
+            input.close();
         }
     }
 

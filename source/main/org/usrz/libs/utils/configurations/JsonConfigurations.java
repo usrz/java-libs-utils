@@ -34,7 +34,7 @@ import javax.script.ScriptException;
  *
  * @author <a href="mailto:pier@usrz.com">Pier Fumagalli</a>
  */
-public class JsonConfigurations extends Configurations {
+public class JsonConfigurations extends MappedConfigurations {
 
     /* Platform-dependant line separator to wrap our JSON */
     private static final String LINE_SEPARATOR = System.getProperty("line.separator");
@@ -50,8 +50,9 @@ public class JsonConfigurations extends Configurations {
      * <em><a href="http://json.org/">JSON</a>-like file</em> from the
      * specified {@link Reader}.
      */
-    public JsonConfigurations(Reader reader) {
-        super(load(reader), false);
+    public JsonConfigurations(Reader reader)
+    throws ConfigurationsException, IOException {
+        super(parse(reader));
     }
 
     /**
@@ -59,38 +60,22 @@ public class JsonConfigurations extends Configurations {
      * <em><a href="http://json.org/">JSON</a>-like file</em> from the
      * specified {@link InputStream}.
      */
-    public JsonConfigurations(InputStream input) {
-        super(load(input), false);
-    }
-
-    /* ====================================================================== */
-
-    private static final Map<String, Object> load(InputStream input) {
-        if (input == null) throw new NullPointerException("Null input stream");
-        return load(new InputStreamReader(input, UTF8));
-    }
-
-    private static final Map<String, Object> load(Reader reader) {
-        try {
-            return parse(reader);
-        } catch (ConfigurationsException exception) {
-            throw exception.unchecked();
-        } catch (IOException exception) {
-            throw new IllegalStateException("I/O error reading JSON", exception);
-        }
+    public JsonConfigurations(InputStream input)
+    throws ConfigurationsException, IOException {
+        super(parse(input));
     }
 
     /* ====================================================================== */
 
     static final Map<String, Object> parse(InputStream input)
-    throws ConfigurationsException, IOException {
+    throws IOException, ConfigurationsException {
         if (input == null) throw new NullPointerException("Null input stream");
         return parse(new InputStreamReader(input, UTF8));
     }
 
     @SuppressWarnings("unchecked")
     static final Map<String, Object> parse(Reader reader)
-    throws ConfigurationsException, IOException {
+    throws IOException, ConfigurationsException {
         if (reader == null) throw new NullPointerException("Null reader");
 
         /* Read our JSON fully, wrapping it in a { json } structure */
@@ -114,15 +99,12 @@ public class JsonConfigurations extends Configurations {
 
         } catch (RuntimeException exception) {
             final Throwable cause = exception.getCause();
-            if (cause instanceof ConfigurationsException) throw (ConfigurationsException) cause;
             if (cause instanceof IOException) throw (IOException) cause;
             throw exception;
 
         } catch (ScriptException exception) {
             /* Wrap a JsonParseException in a ConfigurationsException */
-            final ConfigurationsException wrapper = new ConfigurationsException("Unable to parse JSON format", true);
-            wrapper.initLocation(exception.getLineNumber() - 1, exception.getColumnNumber());
-            throw wrapper.initCause(exception);
+            throw new ConfigurationsException("Unable to parse JSON format");
         }
     }
 
@@ -134,20 +116,18 @@ public class JsonConfigurations extends Configurations {
 
         private static final Callback CALLBACK = new Callback();
 
-        public Map<String, Object> invoke(Map<?, ?> map)
-        throws ConfigurationsException {
+        public Map<String, Object> invoke(Map<?, ?> map) {
             return build(map, new HashMap<>(), "");
         }
 
-        private Map<String, Object> build(Map<?, ?> from, Map<String, Object> to, String prefix)
-        throws ConfigurationsException {
+        private Map<String, Object> build(Map<?, ?> from, Map<String, Object> to, String prefix) {
             for (Object object: from.keySet()) {
                 final String key = prefix + object.toString();
                 final Object value = from.get(object);
                 if (value instanceof Map) {
                     build((Map<?, ?>) value, to, key + ".");
                 } else {
-                    to.put(Configurations.validateKey(key), value);
+                    to.put(key, value);
                 }
             }
             return to;

@@ -19,22 +19,16 @@ package org.usrz.libs.utils.configurations;
  * An exception indicating that something went wrong parsing or creating a
  * a {@link Configurations} instance.
  *
- * <p>This exception is only used <em>internally</em> by the configurations
- * API, while normally it's {@linkplain #unchecked() unchecked} counter-part
- * is thrown back in normal methods.</p>
- *
  * @author <a href="mailto:pier@usrz.com">Pier Fumagalli</a>
  */
-public class ConfigurationsException extends Exception {
+public class ConfigurationsException extends RuntimeException {
 
     private String location = null;
-    private int line = -1;
-    private int column = -1;
 
     /**
      * Create a new {@link ConfigurationsException} for the specified key.
      */
-    protected ConfigurationsException(String message, boolean x) {
+    protected ConfigurationsException(String message) {
         super(message);
     }
 
@@ -42,23 +36,7 @@ public class ConfigurationsException extends Exception {
      * Initialize the location of this {@link ConfigurationsException}.
      */
     protected ConfigurationsException initLocation(String location) {
-        return this.initLocation(location, -1, -1);
-    }
-
-    /**
-     * Initialize the location of this {@link ConfigurationsException}.
-     */
-    protected ConfigurationsException initLocation(int line, int column) {
-        return this.initLocation(null, line, column);
-    }
-
-    /**
-     * Initialize the location of this {@link ConfigurationsException}.
-     */
-    protected ConfigurationsException initLocation(String location, int line, int column) {
         if (location != null) this.location = location;
-        if (line > 0) this.line = line;
-        if (column > 0) this.column = column;
         return this;
     }
 
@@ -81,22 +59,6 @@ public class ConfigurationsException extends Exception {
     }
 
     /**
-     * Return the line number in the {@link #getLocation() location} associated
-     * with this {@link ConfigurationsException} or <b>-1</b>.
-     */
-    public int getLine() {
-        return line;
-    }
-
-    /**
-     * Return the column number in the {@link #getLocation() location}
-     * associated with this {@link ConfigurationsException} or <b>-1</b>.
-     */
-    public int getColumn() {
-        return column;
-    }
-
-    /**
      * Return the message associated with this {@link ConfigurationsException}
      * possibly including location information.
      */
@@ -106,30 +68,12 @@ public class ConfigurationsException extends Exception {
         final StringBuilder builder = new StringBuilder(super.getMessage());
 
         /* Append location if needed */
-        if ((location != null) || (line > 0) || (column > 0)) {
-            String separator = " (";
-            if (location != null) {
-                builder.append(separator).append(location);
-                separator = ", ";
-            }
-            if (line > 0) {
-                builder.append(separator).append("line ").append(line);
-                separator = ", ";
-            }
-            if (column > 0) {
-                builder.append(separator).append("column ").append(column);
-            }
-            builder.append(")");
+        if (location != null)  {
+            builder.append(" (").append(location).append(")");
         }
 
         /* Return message */
         return builder.toString();
     }
 
-    /**
-     * Return an <em>unchecked</em> version of this exception.
-     */
-    protected IllegalArgumentException unchecked() {
-        return new IllegalArgumentException(getMessage(), this);
-    }
 }

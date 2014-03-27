@@ -15,6 +15,7 @@
  * ========================================================================== */
 package org.usrz.libs.utils.configurations;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.Properties;
 
@@ -25,27 +26,30 @@ import java.util.Properties;
  *
  * @author <a href="mailto:pier@usrz.com">Pier Fumagalli</a>
  */
-public class ResourceConfigurations extends Configurations {
+public class ResourceConfigurations extends DelegateConfigurations {
 
     /**
      * Create a new {@link ResourceConfigurations} instance parsing the
      * specified resource associated with the <em>caller</em> {@link Class}.
      */
-    public ResourceConfigurations(String resource) {
-        super(load(resource), false);
+    public ResourceConfigurations(String resource)
+    throws IOException, ConfigurationsException {
+        super(load(resource));
     }
 
     /**
      * Create a new {@link ResourceConfigurations} instance parsing the
      * specified resource associated with the specified {@link Class}.
      */
-    public ResourceConfigurations(Class<?> clazz, String resource) {
-        super(load(clazz, resource), false);
+    public ResourceConfigurations(Class<?> clazz, String resource)
+    throws IOException, ConfigurationsException {
+        super(load(clazz, resource));
     }
 
     /* ====================================================================== */
 
-    private static URLConfigurations load(String resource) {
+    private static URLConfigurations load(String resource)
+    throws IOException, ConfigurationsException {
         final String className = new Throwable().getStackTrace()[2].getClassName();
         try {
             return load(Class.forName(className), resource);
@@ -54,7 +58,8 @@ public class ResourceConfigurations extends Configurations {
         }
     }
 
-    private static URLConfigurations load(Class<?> clazz, String resource) {
+    private static URLConfigurations load(Class<?> clazz, String resource)
+    throws IOException, ConfigurationsException {
         if (clazz == null) throw new NullPointerException("Null class");
         if (resource == null) throw new NullPointerException("Null resource");
 

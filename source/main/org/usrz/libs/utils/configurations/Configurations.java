@@ -24,18 +24,17 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
-import java.util.regex.Pattern;
-
-import org.usrz.libs.logging.Log;
 
 /**
  * The {@link Configurations} class is a unmodifiable {@link Map} used to
@@ -50,85 +49,43 @@ import org.usrz.libs.logging.Log;
  *
  * @author <a href="mailto:pier@usrz.com">Pier Fumagalli</a>
  */
-public class Configurations implements Map<String, String>, Cloneable {
+public abstract class Configurations implements Map<String, String> {
 
     /**
      * A unique immutable <em>empty</em> {@link Configurations} instance.
      */
-    public static final Configurations EMPTY_CONFIGURATIONS = new Configurations(Collections.emptyMap(), false);
+    public static final Configurations EMPTY_CONFIGURATIONS = new Configurations() {
 
-    /* Pattern for validating configuration keys */
-    private static final Pattern NAME_PATTERN = Pattern.compile("^([\\w-]+(\\.[\\w-]+)*)?$");
+        @Override
+        public String getString(Object key, String defaultValue) {
+            return defaultValue;
+        }
+
+        @Override
+        public Set<Entry<String, String>> entrySet() {
+            return Collections.emptySet();
+        }
+
+        @Override
+        public int size() {
+            return 0;
+        }
+    };
+
     /* Platform-dependant line separator to save configurations */
     private static final String LINE_SEPARATOR = System.getProperty("line.separator");
     /* Charset for saving, always UTF8 */
     private static final Charset UTF8 = Charset.forName("UTF8");
-    /* Our logger */
-    private static final Log log = new Log();
-
-    /* The Map of our configurations (immutable) */
-    private final Map<String, String> configurations;
 
     /* ====================================================================== */
     /* CONSTRUCTION                                                           */
     /* ====================================================================== */
 
     /**
-     * Create a new {@link Configurations} instance optionally checking names.
+     * Create a new {@link Configurations} instance.
      */
-    protected Configurations(Map<?, ?> map, boolean checkNames) {
-        if (map == null) throw new NullPointerException("Null map");
-
-        /* Do we *really* have to check names? */
-        if ((checkNames) && (map instanceof Configurations)) checkNames = false;
-
-        /* Prepare our map where key/values will be copied into */
-        final Map<String, String> configurations = new HashMap<>();
-
-        /* Iterate through the given map */
-        for (Entry<?, ?> entry: map.entrySet()) {
-            /* Validate or normalize the key */
-            final String key;
-            try {
-                key = checkNames ? validateKey(entry.getKey()) : key(entry.getKey());
-            } catch (ConfigurationsException exception) {
-                throw exception.unchecked();
-            }
-            final Object object = entry.getValue();
-
-            /* Null or empty values? */
-            if (object == null) {
-                log.debug("Null value in map for key \"%s\", ignoring...", key);
-                continue;
-            }
-            final String value = object.toString().trim();
-            if (value.length() == 0) {
-                log.debug("Empty value in map for key \"%s\", ignoring...", key);
-                continue;
-            }
-
-            /* Remember this mapping */
-            configurations.put(key, value);
-        }
-
-        /* All done! */
-        this.configurations = Collections.unmodifiableMap(configurations);
-    }
-
-    /* ====================================================================== */
-
-    /**
-     * Create a new {@link Configurations} instance copying all keys and
-     * values from the specified {@link Map}.
-     *
-     * <p>Keys will be validated, and empty values will not be kept.</p>
-     *
-     * <p>All keys and values are converted to their
-     * {@linkplain Object#toString() string} value and
-     * {@linkplain String#trim() trimmed} before being stored.</p>
-     */
-    public Configurations(Map<?, ?> map) {
-        this(map, true);
+    protected Configurations() {
+        /* Nothing to do */
     }
 
     /* ====================================================================== */
@@ -141,14 +98,14 @@ public class Configurations implements Map<String, String>, Cloneable {
      *
      * <p>If a mapping is contained both in the specified {@link Map} and in
      * this instance, the one contained by this instance will be kept.</p>
+     * @throws ConfigurationsException
      */
-    public final Configurations merge(Map<?, ?> map) {
-        final Map<String, String> configurations = new HashMap<>();
-        configurations.putAll(map instanceof Configurations ?
-                                  (Configurations) map :
-                                  new Configurations(map, true));
+    public final Configurations merge(Map<?, ?> map)
+    throws ConfigurationsException {
+        final Map<Object, Object> configurations = new HashMap<>();
+        configurations.putAll(map);
         configurations.putAll(this);
-        return new Configurations(configurations, false);
+        return new MappedConfigurations(configurations);
     }
 
     /**
@@ -159,14 +116,14 @@ public class Configurations implements Map<String, String>, Cloneable {
      * <p>If a mapping is contained both in the specified {@link Map} and in
      * this instance, the one contained by this instance will be overridden
      * with the one from the specified {@link Map}.</p>
+     * @throws ConfigurationsException
      */
-    public final Configurations override(Map<?, ?> map) {
-        final Map<String, String> configurations = new HashMap<>();
+    public final Configurations override(Map<?, ?> map)
+    throws ConfigurationsException {
+        final Map<Object, Object> configurations = new HashMap<>();
         configurations.putAll(this);
-        configurations.putAll(map instanceof Configurations ?
-                                  (Configurations) map :
-                                  new Configurations(map, true));
-        return new Configurations(configurations, false);
+        configurations.putAll(map);
+        return new MappedConfigurations(configurations);
     }
 
     /* ====================================================================== */
@@ -192,7 +149,8 @@ public class Configurations implements Map<String, String>, Cloneable {
      * prefix.key2 = value2
      * </pre>
      */
-    public final Configurations prefix(String prefix) {
+    public final Configurations prefix(String prefix)
+    throws ConfigurationsException {
 
         /* Check and normalize the prefix */
         if (prefix == null) throw new NullPointerException("Null prefix");
@@ -204,7 +162,7 @@ public class Configurations implements Map<String, String>, Cloneable {
             configurations.put(prefix + entry.getKey(), entry.getValue());
 
         /* All done */
-        return new Configurations(configurations, false);
+        return new MappedConfigurations(configurations);
     }
 
     /**
@@ -228,7 +186,8 @@ public class Configurations implements Map<String, String>, Cloneable {
      * prefix.key2 = value2
      * </pre>
      */
-    public final Configurations extract(String prefix) {
+    public final Configurations extract(String prefix)
+    throws ConfigurationsException {
 
         /* Check and normalize the prefix */
         if (prefix == null) throw new NullPointerException("Null prefix");
@@ -245,7 +204,7 @@ public class Configurations implements Map<String, String>, Cloneable {
         }
 
         /* All done */
-        return new Configurations(configurations, false);
+        return new MappedConfigurations(configurations);
     }
 
     /**
@@ -269,7 +228,8 @@ public class Configurations implements Map<String, String>, Cloneable {
      * key2 = prefixed value 2
      * </pre>
      */
-    public final Configurations strip(String prefix) {
+    public final Configurations strip(String prefix)
+    throws ConfigurationsException {
 
         /* Check and normalize the prefix */
         if (prefix == null) throw new NullPointerException("Null prefix");
@@ -288,7 +248,7 @@ public class Configurations implements Map<String, String>, Cloneable {
         }
 
         /* All done */
-        return new Configurations(configurations, false);
+        return new MappedConfigurations(configurations);
     }
 
     /* ====================================================================== */
@@ -326,7 +286,8 @@ public class Configurations implements Map<String, String>, Cloneable {
      * key2 = a different value 2
      * </pre>
      */
-    public final Map<String, Configurations> group(String prefix) {
+    public final Map<String, Configurations> group(String prefix)
+    throws ConfigurationsException {
 
         /* Check and normalize */
         if (prefix == null) throw new NullPointerException("Null prefix");
@@ -387,7 +348,8 @@ public class Configurations implements Map<String, String>, Cloneable {
      * key2 = yet another different value 2
      * </pre>
      */
-    public final Map<String, Configurations> group(String prefix, String... groups) {
+    public final Map<String, Configurations> group(String prefix, String... groups)
+    throws ConfigurationsException {
 
         /* Check and normalize the prefix */
         if (prefix == null) throw new NullPointerException("Null key");
@@ -444,7 +406,8 @@ public class Configurations implements Map<String, String>, Cloneable {
      * key2 = yet another different value 2
      * </pre>
      */
-    public final Map<String, Configurations> group(String prefix, boolean explicit) {
+    public final Map<String, Configurations> group(String prefix, boolean explicit)
+    throws ConfigurationsException {
         if (!explicit) return group(prefix);
 
         /* Get the value for our key */
@@ -498,10 +461,8 @@ public class Configurations implements Map<String, String>, Cloneable {
      * {@link String} or the specified <em>default value</em> if no mapping
      * was found.
      */
-    public final String getString(Object key, String defaultValue) {
-        final String value = configurations.get(key(key));
-        return value == null ? defaultValue : value;
-    }
+    public abstract String getString(Object key, String defaultValue);
+
     /* ====================================================================== */
     /* CONVERSION METHODS                                                     */
     /* ====================================================================== */
@@ -816,8 +777,11 @@ public class Configurations implements Map<String, String>, Cloneable {
      * Returns a {@link Set} view of the keys contained in this instance.
      */
     @Override
-    public final Set<String> keySet() {
-        return Collections.unmodifiableSet(configurations.keySet());
+    public Set<String> keySet() {
+        final Set<String> keys = new HashSet<>();
+        for (Entry<String, String> entry: entrySet())
+            keys.add(entry.getKey());
+        return Collections.unmodifiableSet(keys);
     }
 
     /**
@@ -825,17 +789,18 @@ public class Configurations implements Map<String, String>, Cloneable {
      * instance.
      */
     @Override
-    public final Collection<String> values() {
-        return Collections.unmodifiableCollection(configurations.keySet());
+    public Collection<String> values() {
+        final List<String> values = new ArrayList<>();
+        for (Entry<String, String> entry: entrySet())
+            values.add(entry.getValue());
+        return Collections.unmodifiableCollection(values);
     }
 
     /**
      * Returns a {@link Set} view of the mappings contained in this instance.
      */
     @Override
-    public final Set<Entry<String, String>> entrySet() {
-        return Collections.unmodifiableSet(configurations.entrySet());
-    }
+    public abstract Set<Entry<String, String>> entrySet();
 
     /* ====================================================================== */
     /* DELEGATED METHODS                                                      */
@@ -845,16 +810,14 @@ public class Configurations implements Map<String, String>, Cloneable {
      * Returns the number of key-value mappings in this instance.
      */
     @Override
-    public final int size() {
-        return configurations.size();
-    }
+    public abstract int size();
 
     /**
      * Returns <b>true</b> if this instance contains no key-value mappings.
      */
     @Override
     public final boolean isEmpty() {
-        return configurations.isEmpty();
+        return size() == 0;
     }
 
     /**
@@ -863,7 +826,9 @@ public class Configurations implements Map<String, String>, Cloneable {
      */
     @Override
     public final boolean containsKey(Object key) {
-        return configurations.containsKey(key(key));
+        final String defaultValue = new String();
+        final String value = this.getString(key, defaultValue);
+        return value != defaultValue;
     }
 
     /**
@@ -872,7 +837,10 @@ public class Configurations implements Map<String, String>, Cloneable {
      */
     @Override
     public final boolean containsValue(Object value) {
-        return configurations.containsValue(value);
+        if (value == null) return false;
+        for (String string: values())
+            if (string.equals(value)) return true;
+        return false;
     }
 
     /* ====================================================================== */
@@ -886,7 +854,7 @@ public class Configurations implements Map<String, String>, Cloneable {
      * <p>This method will use the <em>UTF-8</em> character set, and will save
      * entries in a way similar to {@linkplain Properties java properties}.</p>
      */
-    public Configurations list(OutputStream output)
+    public final Configurations list(OutputStream output)
     throws IOException {
         return list(new OutputStreamWriter(output, UTF8));
     }
@@ -898,7 +866,7 @@ public class Configurations implements Map<String, String>, Cloneable {
      * <p>This method will save entries in a way similar to
      * {@linkplain Properties java properties}.</p>
      */
-    public Configurations list(Writer writer)
+    public final Configurations list(Writer writer)
     throws IOException {
         final Set<String> sorted = new TreeSet<>(keySet());
         for (String key: sorted) {
@@ -923,15 +891,10 @@ public class Configurations implements Map<String, String>, Cloneable {
      */
     @Override
     public final int hashCode() {
-        return configurations.hashCode() ^ Configurations.class.hashCode();
-    }
-
-    /**
-     * Make a <em>shallow copy</em> of the mappings contained by this instance.
-     */
-    @Override
-    public Configurations clone() {
-        return new Configurations(configurations, false);
+        int hash = 0;
+        for (Entry<String, String> entry: entrySet())
+            hash += (entry.getKey().hashCode() ^ entry.getValue().hashCode());
+        return hash ^ Configurations.class.hashCode();
     }
 
     /**
@@ -942,11 +905,19 @@ public class Configurations implements Map<String, String>, Cloneable {
      * instance.</p>
      */
     @Override
-    public boolean equals(Object object) {
+    public final boolean equals(Object object) {
         if (object == this) return true;
         if (object == null) return false;
         try {
-            return configurations.equals(((Configurations) object).configurations);
+            final Configurations configurations = (Configurations) object;
+            if (size() != configurations.size()) return false;
+            for (Entry<String, String> entry: entrySet()) {
+                final String key = entry.getKey();
+                final String value = entry.getValue();
+                if (value.equals(configurations.get(key))) continue;
+                return false;
+            }
+            return true;
         } catch (ClassCastException exception) {
             return false;
         }
@@ -995,30 +966,4 @@ public class Configurations implements Map<String, String>, Cloneable {
     public final void clear() {
         throw new UnsupportedOperationException();
     }
-
-    /* ====================================================================== */
-    /* VALIDATE KEY NAMES                                                     */
-    /* ====================================================================== */
-    protected static final String validateKey(Object key)
-    throws ConfigurationsException {
-        if (key == null) return "";
-        final String name = key.toString().trim();
-        if (NAME_PATTERN.matcher(name).matches()) return name;
-        throw new ConfigurationsException("Invalid key name \"" + key + "\"", true);
-    }
-
-    /* ====================================================================== */
-    /* KEY MAPPING                                                            */
-    /* ====================================================================== */
-
-    /* Get a valid key from the specified object. */
-    private static String key(Object key) {
-        if (key == null) return "";
-        try {
-            return ((String) key).trim();
-        } catch (ClassCastException exception) {
-            return key.toString().trim();
-        }
-    }
-
 }

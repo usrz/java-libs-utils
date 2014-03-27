@@ -15,6 +15,7 @@
  * ========================================================================== */
 package org.usrz.libs.utils.configurations;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -44,7 +45,7 @@ import org.usrz.libs.logging.Log;
  *
  * @author <a href="mailto:pier@usrz.com">Pier Fumagalli</a>
  */
-public class DefaultConfigurations extends Configurations {
+public class DefaultConfigurations extends DelegateConfigurations {
 
     /**
      * The resource name (<code>defaults.properties</code>) to use when looking
@@ -65,21 +66,24 @@ public class DefaultConfigurations extends Configurations {
      * Create a new {@link ResourceConfigurations} instance parsing the
      * defaults files associated with the <em>caller</em> {@link Class}.
      */
-    public DefaultConfigurations() {
-        super(load(), false);
+    public DefaultConfigurations()
+    throws IOException, ConfigurationsException {
+        super(load());
     }
 
     /**
      * Create a new {@link ResourceConfigurations} instance parsing the
      * defaults files associated with the <em>specified</em> {@link Class}.
      */
-    public DefaultConfigurations(Class<?> clazz) {
-        super(load(clazz), false);
+    public DefaultConfigurations(Class<?> clazz)
+    throws IOException, ConfigurationsException {
+        super(load(clazz));
     }
 
     /* ====================================================================== */
 
-    private static final Configurations load() {
+    private static final Configurations load()
+    throws IOException, ConfigurationsException {
         final String className = new Throwable().getStackTrace()[2].getClassName();
         try {
             return load(Class.forName(className));
@@ -88,7 +92,8 @@ public class DefaultConfigurations extends Configurations {
         }
     }
 
-    private static final Configurations load(Class<?> clazz) {
+    private static final Configurations load(Class<?> clazz)
+    throws IOException, ConfigurationsException {
         if (clazz == null) throw new NullPointerException("Null class");
 
         final List<URL> resources = new ArrayList<>();

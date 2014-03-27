@@ -41,152 +41,105 @@ public class ConfigurationsBuilder {
      * Build a {@link Configurations} instance from the mappings previously
      * <em>put</em> in this {@linkplain ConfigurationsBuilder builder}.
      */
-    public Configurations build() {
-        return new Configurations(configurations, false);
+    public Configurations build()
+    throws ConfigurationsException {
+        return new MappedConfigurations(configurations);
     }
 
     /**
      * Associate the given key with the specified {@link String} value.
      */
     public ConfigurationsBuilder put(String key, String value) {
-        try {
-            configurations.put(Configurations.validateKey(key), value);
-            return this;
-        } catch (ConfigurationsException exception) {
-            throw exception.unchecked();
-        }
+        configurations.put(key, value);
+        return this;
     }
 
     /**
      * Associate the given key with the specified <b>boolean</b> value.
      */
     public ConfigurationsBuilder put(String key, boolean value) {
-        try {
-            configurations.put(Configurations.validateKey(key), value);
-            return this;
-        } catch (ConfigurationsException exception) {
-            throw exception.unchecked();
-        }
+        configurations.put(key, value);
+        return this;
     }
 
     /**
      * Associate the given key with the specified <b>byte</b> value.
      */
     public ConfigurationsBuilder put(String key, byte value) {
-        try {
-            configurations.put(Configurations.validateKey(key), value);
-            return this;
-        } catch (ConfigurationsException exception) {
-            throw exception.unchecked();
-        }
+        configurations.put(key, value);
+        return this;
     }
 
     /**
      * Associate the given key with the specified <b>double</b> value.
      */
     public ConfigurationsBuilder put(String key, double value) {
-        try {
-            configurations.put(Configurations.validateKey(key), value);
-            return this;
-        } catch (ConfigurationsException exception) {
-            throw exception.unchecked();
-        }
+        configurations.put(key, value);
+        return this;
     }
 
     /**
      * Associate the given key with the specified <b>float</b> value.
      */
     public ConfigurationsBuilder put(String key, float value) {
-        try {
-            configurations.put(Configurations.validateKey(key), value);
-            return this;
-        } catch (ConfigurationsException exception) {
-            throw exception.unchecked();
-        }
+        configurations.put(key, value);
+        return this;
     }
 
     /**
      * Associate the given key with the specified <b>int</b> value.
      */
     public ConfigurationsBuilder put(String key, int value) {
-        try {
-            configurations.put(Configurations.validateKey(key), value);
-            return this;
-        } catch (ConfigurationsException exception) {
-            throw exception.unchecked();
-        }
+        configurations.put(key, value);
+        return this;
     }
 
     /**
      * Associate the given key with the specified <b>long</b> value.
      */
     public ConfigurationsBuilder put(String key, long value) {
-        try {
-            configurations.put(Configurations.validateKey(key), value);
-            return this;
-        } catch (ConfigurationsException exception) {
-            throw exception.unchecked();
-        }
+        configurations.put(key, value);
+        return this;
     }
 
     /**
      * Associate the given key with the specified <b>short</b> value.
      */
     public ConfigurationsBuilder put(String key, short value) {
-        try {
-            configurations.put(Configurations.validateKey(key), value);
-            return this;
-        } catch (ConfigurationsException exception) {
-            throw exception.unchecked();
-        }
+        configurations.put(key, value);
+        return this;
     }
 
     /**
      * Associate the given key with the specified {@link File} value.
      */
     public ConfigurationsBuilder put(String key, File value) {
-        try {
-            configurations.put(Configurations.validateKey(key), value);
-            return this;
-        } catch (ConfigurationsException exception) {
-            throw exception.unchecked();
-        }
+        configurations.put(key, value);
+        return this;
     }
 
     /**
      * Associate the given key with the specified {@link URI} value.
      */
     public ConfigurationsBuilder put(String key, URI value) {
-        try {
-            configurations.put(Configurations.validateKey(key), value);
-            return this;
-        } catch (ConfigurationsException exception) {
-            throw exception.unchecked();
-        }
+        configurations.put(key, value);
+        return this;
     }
 
     /**
      * Associate the given key with the specified {@link URL} value.
      */
     public ConfigurationsBuilder put(String key, URL value) {
-        try {
-            configurations.put(Configurations.validateKey(key), value);
-            return this;
-        } catch (ConfigurationsException exception) {
-            throw exception.unchecked();
-        }
+        configurations.put(key, value);
+        return this;
     }
 
     /**
      * Associate the given key with the specified {@link Object} value.
      */
     public ConfigurationsBuilder put(String key, Object value) {
-        try {
-            configurations.put(Configurations.validateKey(key), value);
-            return this;
-        } catch (ConfigurationsException exception) {
-            throw exception.unchecked();
-        }
+        configurations.put(key, value);
+        return this;
     }
 
 }

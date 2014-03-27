@@ -28,7 +28,7 @@ import java.util.Properties;
  *
  * @author <a href="mailto:pier@usrz.com">Pier Fumagalli</a>
  */
-public class PropertiesConfigurations extends Configurations {
+public class PropertiesConfigurations extends MappedConfigurations {
 
     /* Our charset, UTF8, always */
     private static final Charset UTF8 = Charset.forName("UTF8");
@@ -42,8 +42,9 @@ public class PropertiesConfigurations extends Configurations {
      * <em>Java {@linkplain Properties properties} file</em> from the
      * specified {@link Reader}.
      */
-    public PropertiesConfigurations(Reader reader) {
-        super(load(reader), false);
+    public PropertiesConfigurations(Reader reader)
+    throws IOException, ConfigurationsException {
+        super(parse(reader));
     }
 
     /**
@@ -51,25 +52,9 @@ public class PropertiesConfigurations extends Configurations {
      * <em>Java {@linkplain Properties properties} file</em> from the
      * specified {@link InputStream}.
      */
-    public PropertiesConfigurations(InputStream input) {
-        super(load(input), false);
-    }
-
-    /* ====================================================================== */
-
-    private static final Properties load(InputStream input) {
-        if (input == null) throw new NullPointerException("Null input stream");
-        return load(new InputStreamReader(input, UTF8));
-    }
-
-    private static final Properties load(Reader reader) {
-        try {
-            return parse(reader);
-        } catch (ConfigurationsException exception) {
-            throw exception.unchecked();
-        } catch (IOException exception) {
-            throw new IllegalStateException("I/O error reading properties");
-        }
+    public PropertiesConfigurations(InputStream input)
+    throws IOException, ConfigurationsException {
+        super(parse(input));
     }
 
     /* ====================================================================== */
@@ -78,8 +63,8 @@ public class PropertiesConfigurations extends Configurations {
      * Parse a <em>Java properties file</em> and return a {@link Properties}
      * instance with its contents, after validating each key name.
      */
-    static final Properties parse(InputStream input)
-    throws IOException, ConfigurationsException {
+    private static final Properties parse(InputStream input)
+    throws IOException {
         if (input == null) throw new NullPointerException("Null input stream");
         return parse(new InputStreamReader(input, UTF8));
     }
@@ -88,16 +73,13 @@ public class PropertiesConfigurations extends Configurations {
      * Parse a <em>Java properties file</em> and return a {@link Properties}
      * instance with its contents, after validating each key name.
      */
-    static final Properties parse(Reader reader)
-    throws IOException, ConfigurationsException {
+    private static final Properties parse(Reader reader)
+    throws IOException {
         if (reader == null) throw new NullPointerException("Null reader");
 
         /* Load our properties */
         final Properties properties = new Properties();
         properties.load(reader);
-
-        /* Validate our keys */
-        for (Object key: properties.keySet())  Configurations.validateKey(key);
 
         /* Return our properties */
         return properties;

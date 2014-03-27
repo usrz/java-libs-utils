@@ -18,7 +18,6 @@ package org.usrz.libs.utils.configurations;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.Map;
 import java.util.Properties;
 
 import org.usrz.libs.logging.Log;
@@ -33,7 +32,7 @@ import org.usrz.libs.logging.Log;
  * which <b>must be</b> "<code>.json</code>" for JSON files, or either
  * "<code>.properties</code>" or "<code>.xml</code>" for properties files.</p>
  */
-public class URLConfigurations extends Configurations {
+public class URLConfigurations extends DelegateConfigurations {
 
     private static final Log log = new Log();
 
@@ -42,32 +41,32 @@ public class URLConfigurations extends Configurations {
      * {@link URL}, either in <em>Java {@linkplain Properties properties}</em>
      * or <em><a href="http://json.org/">JSON</a></em> format.
      */
-    public URLConfigurations(URL url) {
-        super(load(url), false);
+    public URLConfigurations(URL url)
+    throws IOException, ConfigurationsException {
+        super(load(url));
     }
 
     /* ====================================================================== */
 
-    private static final Map<?, ?> load(URL url) {
+    private static final Configurations load(URL url)
+    throws IOException, ConfigurationsException {
         if (url == null) throw new NullPointerException("Null URL");
 
         log.debug("Parsing configurations from URL %s", url);
 
         final String name = url.toString();
         final String file = url.getFile();
-        try {
-            final InputStream input = url.openStream();
+        final InputStream input = url.openStream();
+            try {
             if (file.endsWith(".json"))
-                return JsonConfigurations.parse(input);
+                return new JsonConfigurations(input);
             else if (file.endsWith(".properties") || name.endsWith(".xml")) {
-                return PropertiesConfigurations.parse(input);
+                return new PropertiesConfigurations(input);
             } else {
                 throw new IllegalArgumentException("URL \"" + name + "\" must end with \".json\", \".properties\", or \".xml\"");
             }
-        } catch (ConfigurationsException exception) {
-            throw exception.initLocation(name).unchecked();
-        } catch (IOException exception) {
-            throw new IllegalStateException("I/O error parsing " + name);
+        } finally {
+            input.close();
         }
     }
 

@@ -15,17 +15,19 @@
  * ========================================================================== */
 package org.usrz.libs.utils.configurations;
 
+import java.io.IOException;
+
 import org.testng.annotations.Test;
 import org.usrz.libs.logging.Logging;
 import org.usrz.libs.testing.AbstractTest;
-import org.usrz.libs.utils.configurations.DefaultConfigurations;
 
 public class DefaultConfigurationsTest extends AbstractTest {
 
     static { Logging.init(); }
 
     @Test
-    public void testDefaultConfigurations() {
+    public void testDefaultConfigurations()
+    throws IOException, ConfigurationsException {
         assertEquals(new DefaultConfigurations().get("default"), "a nice default");;
     }
 }

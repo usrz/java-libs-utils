@@ -49,18 +49,11 @@ public class JsonConfigurationsTest extends AbstractTest {
         assertEquals(configurations, json);
     }
 
-    @Test(expectedExceptions = IllegalArgumentException.class,
+    @Test(expectedExceptions = ConfigurationsException.class,
           expectedExceptionsMessageRegExp = "^Invalid key name \\\"test.a wrong key\\\".*")
     public void testJsonWrongKey()
     throws Exception {
-        try {
-            new ResourceConfigurations("wrongkey.json").list(System.err);
-            fail("Exception not thrown");
-        } catch (IllegalArgumentException exception) {
-            final ConfigurationsException wrapper = (ConfigurationsException) exception.getCause();
-            assertEquals(exception.getMessage(), wrapper.getMessage());
-            assertEquals(wrapper.getLocation(), this.getClass().getResource("wrongkey.json").toString());
-            throw exception;
-        }
+        new ResourceConfigurations("wrongkey.json").list(System.err);
+        fail("Exception not thrown");
     }
 }

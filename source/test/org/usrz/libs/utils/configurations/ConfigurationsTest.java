@@ -18,17 +18,13 @@ package org.usrz.libs.utils.configurations;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.util.Map;
 
 import org.testng.annotations.Test;
 import org.usrz.libs.testing.AbstractTest;
-import org.usrz.libs.utils.configurations.Configurations;
-import org.usrz.libs.utils.configurations.ConfigurationsBuilder;
-import org.usrz.libs.utils.configurations.ConfigurationsException;
-import org.usrz.libs.utils.configurations.PropertiesConfigurations;
-import org.usrz.libs.utils.configurations.ResourceConfigurations;
 
 public class ConfigurationsTest extends AbstractTest {
 
@@ -199,7 +195,8 @@ public class ConfigurationsTest extends AbstractTest {
     }
 
     @Test
-    public void testGroup() {
+    public void testGroup()
+    throws IOException, ConfigurationsException {
         final Configurations configurations = new ResourceConfigurations("test.properties");
 
         final Map<String, Configurations> explicit = configurations.group("group", false);
@@ -245,7 +242,8 @@ public class ConfigurationsTest extends AbstractTest {
     }
 
     @Test
-    public void testExplicitGroup() {
+    public void testExplicitGroup()
+    throws IOException, ConfigurationsException {
         final Configurations configurations = new ResourceConfigurations("test.properties");
 
         final Map<String, Configurations> explicit = configurations.group("explicit", true);
@@ -290,37 +288,11 @@ public class ConfigurationsTest extends AbstractTest {
         assertEquals(original.hashCode(), reloaded.hashCode());
     }
 
-    @Test
-    public void testClone()
-    throws Exception {
-        final Configurations original = new ResourceConfigurations("test.properties");
-        final Configurations cloned = original.clone();
-
-        assertNotSame(cloned, original);
-
-        assertEquals(cloned, original);
-
-        assertTrue(cloned.equals(original));
-        assertTrue(original.equals(cloned));
-
-        assertEquals(cloned.hashCode(), original.hashCode());
-        assertEquals(original.hashCode(), cloned.hashCode());
-    }
-
-    @Test(expectedExceptions = IllegalArgumentException.class,
+    @Test(expectedExceptions = ConfigurationsException.class,
           expectedExceptionsMessageRegExp = "^Invalid key name \\\"a~wrong~key\\\".*")
     public void testWrongKey()
     throws Exception {
-        try {
-            new ResourceConfigurations("wrongkey.properties");
-            fail("Exception not thrown");
-        } catch (IllegalArgumentException exception) {
-            final ConfigurationsException wrapper = (ConfigurationsException) exception.getCause();
-            assertEquals(exception.getMessage(), wrapper.getMessage());
-            assertEquals(wrapper.getLocation(), this.getClass().getResource("wrongkey.properties").toString());
-            assertEquals(wrapper.getLine(), -1);
-            assertEquals(wrapper.getColumn(), -1);
-            throw exception;
-        }
+        new ResourceConfigurations("wrongkey.properties");
+        fail("Exception not thrown");
     }
 }
