@@ -45,9 +45,9 @@ public class MappedConfigurations extends Configurations {
     /* ====================================================================== */
 
     /**
-     * Create a new {@link MappedConfigurations} instance optionally checking names.
+     * Create a new {@link MappedConfigurations} from a {@link Map}.
      */
-    protected MappedConfigurations(Map<?, ?> map)
+    public MappedConfigurations(Map<?, ?> map)
     throws ConfigurationsException {
         if (map == null) throw new NullPointerException("Null map");
 
