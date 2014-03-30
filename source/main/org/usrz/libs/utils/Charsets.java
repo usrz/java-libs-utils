@@ -17,6 +17,11 @@ package org.usrz.libs.utils;
 
 import java.nio.charset.Charset;
 
+/**
+ * A collection of {@link Charset} instances.
+ *
+ * @author <a href="mailto:pier@usrz.com">Pier Fumagalli</a>
+ */
 public final class Charsets {
 
     /* Deny constructions */
