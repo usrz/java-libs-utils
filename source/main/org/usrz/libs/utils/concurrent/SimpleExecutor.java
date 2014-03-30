@@ -20,29 +20,17 @@ import static org.usrz.libs.utils.concurrent.Immediate.immediate;
 import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
-import org.usrz.libs.logging.Log;
-
 import com.google.common.util.concurrent.ForwardingFuture;
 import com.google.common.util.concurrent.SettableFuture;
+import com.google.inject.ProvidedBy;
 
-@Singleton
+@ProvidedBy(SimpleExecutorProvider.class)
 public class SimpleExecutor {
 
-    private static final Log log = new Log();
     private final ExecutorService executor;
-
-    @Inject
-    private SimpleExecutor() {
-        this(Executors.newCachedThreadPool());
-        log.info("Constructed unbound %s", this);
-    }
 
     protected SimpleExecutor(ExecutorService executor) {
         this.executor = Objects.requireNonNull(executor);

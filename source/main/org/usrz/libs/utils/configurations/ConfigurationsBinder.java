@@ -26,6 +26,8 @@ import org.usrz.libs.utils.inject.ScopedBindingBuilderWrapper;
 import com.google.inject.Binder;
 import com.google.inject.Key;
 import com.google.inject.PrivateBinder;
+import com.google.inject.Provider;
+import com.google.inject.ProvisionException;
 import com.google.inject.TypeLiteral;
 import com.google.inject.binder.AnnotatedBindingBuilder;
 import com.google.inject.binder.LinkedBindingBuilder;
@@ -42,26 +44,51 @@ public class ConfigurationsBinder extends BinderWrapper {
 
     @Override
     public final <T> ConfigurableAnnotatedBindingBuilder<T> bind(Class<T> type) {
-        return new ConfigurableAnnotatedBindingBuilderImpl<T>(newPrivateBinder(), type);
+        final ConfigurationsProvider provider = new ConfigurationsProvider(newPrivateBinder());
+        return new ConfigurableAnnotatedBindingBuilderImpl<T>(provider, type);
     }
 
     @Override
     public final <T> ConfigurableAnnotatedBindingBuilder<T> bind(TypeLiteral<T> type) {
-        return new ConfigurableAnnotatedBindingBuilderImpl<T>(newPrivateBinder(), type);
+        final ConfigurationsProvider provider = new ConfigurationsProvider(newPrivateBinder());
+        return new ConfigurableAnnotatedBindingBuilderImpl<T>(provider, type);
     }
 
     @Override
     public final <T> ConfigurableLinkedBindingBuilder<T> bind(Key<T> key) {
-        return new ConfigurableLinkedBindingBuilderImpl<T>(newPrivateBinder(), key);
+        final ConfigurationsProvider provider = new ConfigurationsProvider(newPrivateBinder());
+        return new ConfigurableLinkedBindingBuilderImpl<T>(provider, key);
     }
 
     /* ====================================================================== */
 
-    private static void bindConfigurations(PrivateBinder binder, Configurations configurations) {
-        binder.bind(Configurations.class).toInstance(Objects.requireNonNull(configurations, "Null configurations"));
+    private static void bindConfigurations(ConfigurationsProvider provider, Configurations configurations) {
+        if (provider.configurations != Configurations.EMPTY_CONFIGURATIONS)
+            throw new ProvisionException("Configurations already bound");
+
+        provider.configurations = Objects.requireNonNull(configurations, "Null configurations");
         for (Entry<String, String> entry: configurations.entrySet()) {
-            binder.bindConstant().annotatedWith(Names.named(entry.getKey())).to(entry.getValue());
+            provider.binder.bindConstant().annotatedWith(Names.named(entry.getKey())).to(entry.getValue());
         }
+    }
+
+    /* ====================================================================== */
+
+    private static class ConfigurationsProvider implements Provider<Configurations> {
+
+        private Configurations configurations = Configurations.EMPTY_CONFIGURATIONS;
+        private final PrivateBinder binder;
+
+        private ConfigurationsProvider(PrivateBinder binder) {
+            binder.bind(Configurations.class).toProvider(this);
+            this.binder = binder;
+        }
+
+        @Override
+        public Configurations get() {
+            return configurations;
+        }
+
     }
 
     /* ====================================================================== */
@@ -72,34 +99,34 @@ public class ConfigurationsBinder extends BinderWrapper {
                                            ConfigurableScopedBindingBuilder>
     implements ConfigurableAnnotatedBindingBuilder<T> {
 
-        private final PrivateBinder binder;
+        private final ConfigurationsProvider provider;
 
-        private ConfigurableAnnotatedBindingBuilderImpl(PrivateBinder binder, Class<T> type) {
-            super(binder.bind(type));
-            binder.expose(type);
-            this.binder = binder;
+        private ConfigurableAnnotatedBindingBuilderImpl(ConfigurationsProvider provider, Class<T> type) {
+            super(provider.binder.bind(type));
+            provider.binder.expose(type);
+            this.provider = provider;
         }
 
-        private ConfigurableAnnotatedBindingBuilderImpl(PrivateBinder binder, TypeLiteral<T> type) {
-            super(binder.bind(type));
-            binder.expose(type);
-            this.binder = binder;
+        private ConfigurableAnnotatedBindingBuilderImpl(ConfigurationsProvider provider, TypeLiteral<T> type) {
+            super(provider.binder.bind(type));
+            provider.binder.expose(type);
+            this.provider = provider;
         }
 
         @Override
         public AnnotatedBindingBuilder<T> withConfigurations(Configurations configurations) {
-            bindConfigurations(binder, configurations);
+            bindConfigurations(provider, configurations);
             return builder;
         }
 
         @Override
         protected ConfigurableLinkedBindingBuilder<T> newLinkedBindingBuilder(LinkedBindingBuilder<T> builder) {
-            return new ConfigurableLinkedBindingBuilderImpl<T>(binder, builder);
+            return new ConfigurableLinkedBindingBuilderImpl<T>(provider, builder);
         }
 
         @Override
         protected ConfigurableScopedBindingBuilder newScopedBindingBuilder(ScopedBindingBuilder builder) {
-            return new ConfigurableScopedBindingBuilderImpl(binder, builder);
+            return new ConfigurableScopedBindingBuilderImpl(provider, builder);
         }
 
     }
@@ -110,28 +137,28 @@ public class ConfigurationsBinder extends BinderWrapper {
     extends LinkedBindingBuilderWrapper<T, ConfigurableScopedBindingBuilder>
     implements ConfigurableLinkedBindingBuilder<T> {
 
-        private final PrivateBinder binder;
+        private final ConfigurationsProvider provider;
 
-        private ConfigurableLinkedBindingBuilderImpl(PrivateBinder binder, Key<T> key) {
-            super(binder.bind(key));
-            binder.expose(key);
-            this.binder = binder;
+        private ConfigurableLinkedBindingBuilderImpl(ConfigurationsProvider provider, Key<T> key) {
+            super(provider.binder.bind(key));
+            provider.binder.expose(key);
+            this.provider = provider;
         }
 
-        private ConfigurableLinkedBindingBuilderImpl(PrivateBinder binder, LinkedBindingBuilder<T> builder) {
+        private ConfigurableLinkedBindingBuilderImpl(ConfigurationsProvider provider, LinkedBindingBuilder<T> builder) {
             super(builder);
-            this.binder = binder;
+            this.provider = provider;
         }
 
         @Override
         public LinkedBindingBuilder<T> withConfigurations(Configurations configurations) {
-            bindConfigurations(binder, configurations);
+            bindConfigurations(provider, configurations);
             return builder;
         }
 
         @Override
         protected ConfigurableScopedBindingBuilder newScopedBindingBuilder(ScopedBindingBuilder builder) {
-            return new ConfigurableScopedBindingBuilderImpl(binder, builder);
+            return new ConfigurableScopedBindingBuilderImpl(provider, builder);
         }
 
     }
@@ -142,16 +169,16 @@ public class ConfigurationsBinder extends BinderWrapper {
     extends ScopedBindingBuilderWrapper
     implements ConfigurableScopedBindingBuilder {
 
-        private final PrivateBinder binder;
+        private final ConfigurationsProvider provider;
 
-        private ConfigurableScopedBindingBuilderImpl(PrivateBinder binder, ScopedBindingBuilder builder) {
+        private ConfigurableScopedBindingBuilderImpl(ConfigurationsProvider provider, ScopedBindingBuilder builder) {
             super(builder);
-            this.binder = binder;
+            this.provider = provider;
         }
 
         @Override
         public ScopedBindingBuilder withConfigurations(Configurations configurations) {
-            bindConfigurations(binder, configurations);
+            bindConfigurations(provider, configurations);
             return builder;
         }
 

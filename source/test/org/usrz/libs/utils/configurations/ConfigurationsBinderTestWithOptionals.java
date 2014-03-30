@@ -17,16 +17,17 @@ package org.usrz.libs.utils.configurations;
 
 import java.util.Objects;
 
-import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.testng.annotations.Test;
 import org.usrz.libs.testing.AbstractTest;
 
 import com.google.inject.Guice;
+import com.google.inject.Inject;
 import com.google.inject.Injector;
 
-public class ConfigurationsBinderTest extends AbstractTest {
+@SuppressWarnings("restriction")
+public class ConfigurationsBinderTestWithOptionals extends AbstractTest {
 
     @Test
     public void testConfigurationsBinder() {
@@ -46,42 +47,47 @@ public class ConfigurationsBinderTest extends AbstractTest {
         final ClassA instanceA = injector.getInstance(ClassA.class);
         final ClassB instanceB = injector.getInstance(ClassB.class);
 
-        assertEquals(instanceA.getConfigurations().requireString("foo"), "bar");
-        assertEquals(instanceB.getConfigurations().requireString("foo"), "baz");
         assertEquals(instanceA.getFooString(), "bar");
         assertEquals(instanceB.getFooString(), "baz");
     }
 
-    public static final class ClassA extends MyClass {
+    @Test
+    public void testConfigurationsBinderWithNoParams() {
+        final Injector injector = Guice.createInjector();
 
-        @Inject
-        protected ClassA(Configurations configurations, @Named("foo") String foo) {
-            super(configurations, foo);
-        }
+        final ClassA instanceA = injector.getInstance(ClassA.class);
+        final ClassB instanceB = injector.getInstance(ClassB.class);
 
-    }
-
-    public static final class ClassB extends MyClass {
-
-        @Inject
-        protected ClassB(Configurations configurations, @Named("foo") String foo) {
-            super(configurations, foo);
-        }
+        assertEquals(instanceA.getFooString(), null);
+        assertEquals(instanceB.getFooString(), null);
 
     }
 
-    public static class MyClass {
+    /* ====================================================================== */
 
-        private final Configurations configurations;
-        private final String foo;
+    public static final class ClassA {
 
-        protected MyClass(Configurations configurations, String foo) {
-            this.configurations = Objects.requireNonNull(configurations, "Null configurations for " + this.getClass().getSimpleName());
-            this.foo = Objects.requireNonNull(foo, "Null \"foo\" string");
+        private  String foo;
+
+        @Inject(optional=true)
+        private void setFooString(@Named("foo") String foo) {
+            this.foo = Objects.requireNonNull(foo, "Null foo for ClassA");
         }
 
-        public Configurations getConfigurations() {
-            return configurations;
+        public String getFooString() {
+            return foo;
+        }
+    }
+
+    /* ====================================================================== */
+
+    public static final class ClassB {
+
+        private String foo = null;
+
+        @Inject(optional=true)
+        private void setFooString(@Named("foo") String foo) {
+            this.foo = Objects.requireNonNull(foo, "Null foo for ClassB");
         }
 
         public String getFooString() {

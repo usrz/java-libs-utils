@@ -13,21 +13,14 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * ========================================================================== */
-package org.usrz.libs.utils.configurations;
+package org.usrz.libs.utils.inject;
 
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
-
-import java.lang.annotation.ElementType;
+import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
+import java.lang.annotation.RetentionPolicy;
 
-import com.google.inject.BindingAnnotation;
-
-@Retention(RUNTIME)
-@Target({ ElementType.FIELD, ElementType.PARAMETER })
-@BindingAnnotation
-public @interface Configuration {
-
-    Class<?> value();
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+public @interface Nullable {
 
 }
