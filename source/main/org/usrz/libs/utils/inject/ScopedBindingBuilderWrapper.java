@@ -15,41 +15,34 @@
  * ========================================================================== */
 package org.usrz.libs.utils.inject;
 
+import java.lang.annotation.Annotation;
 import java.util.Objects;
-import java.util.function.Function;
 
-import com.google.inject.Binder;
-import com.google.inject.Module;
+import com.google.inject.Scope;
+import com.google.inject.binder.ScopedBindingBuilder;
 
-public abstract class ModuleSupport<B extends Binder> implements Module {
+public class ScopedBindingBuilderWrapper
+implements ScopedBindingBuilder {
 
-    private final ThreadLocal<B> binder = new ThreadLocal<B>();
-    private final Function<Binder, B> conversion;
+    protected final ScopedBindingBuilder builder;
 
-    protected ModuleSupport(Function<Binder, B> conversion) {
-        this.conversion = (binder) ->
-            conversion.apply(Objects.requireNonNull(binder, "Null binder")
-                                    .skipSources(this.getClass(), ModuleSupport.class));
+    protected ScopedBindingBuilderWrapper(ScopedBindingBuilder builder) {
+        this.builder = Objects.requireNonNull(builder, "Null builder");
     }
 
     @Override
-    public final void configure(Binder binder) {
-        if (this.binder.get() != null) {
-            throw new IllegalStateException("Binder already specified in current thread");
-        } else try {
-            this.binder.set(conversion.apply(binder));
-            this.configure();
-        } finally {
-            this.binder.remove();
-        }
+    public final void in(Class<? extends Annotation> scopeAnnotation) {
+        builder.in(scopeAnnotation);
     }
 
-    protected abstract void configure();
+    @Override
+    public final void in(Scope scope) {
+        builder.in(scope);
+    }
 
-    protected final B binder() {
-        final B binder = this.binder.get();
-        if (binder == null) throw new IllegalStateException("No binder available");
-        return binder;
+    @Override
+    public final void asEagerSingleton() {
+        builder.asEagerSingleton();
     }
 
 }

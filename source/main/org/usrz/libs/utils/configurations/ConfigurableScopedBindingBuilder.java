@@ -15,30 +15,10 @@
  * ========================================================================== */
 package org.usrz.libs.utils.configurations;
 
-import org.usrz.libs.utils.inject.AbstractModuleSupport;
+import com.google.inject.binder.ScopedBindingBuilder;
 
-import com.google.inject.Key;
-import com.google.inject.TypeLiteral;
+public interface ConfigurableScopedBindingBuilder extends ScopedBindingBuilder {
 
-public abstract class ConfigurationsModule extends AbstractModuleSupport<ConfigurationsBinder> {
-
-    protected ConfigurationsModule() {
-        super((binder) -> new ConfigurationsBinder(binder));
-    }
-
-    @Override
-    public final <T> ConfigurableAnnotatedBindingBuilder<T> bind(Class<T> type) {
-        return binder().bind(type);
-    }
-
-    @Override
-    public final <T> ConfigurableAnnotatedBindingBuilder<T> bind(TypeLiteral<T> type) {
-        return binder().bind(type);
-    }
-
-    @Override
-    public final <T> ConfigurableLinkedBindingBuilder<T> bind(Key<T> key) {
-        return binder().bind(key);
-    }
+    public ScopedBindingBuilder withConfigurations(Configurations configurations);
 
 }

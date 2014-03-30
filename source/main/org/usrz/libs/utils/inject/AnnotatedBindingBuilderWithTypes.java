@@ -15,41 +15,21 @@
  * ========================================================================== */
 package org.usrz.libs.utils.inject;
 
-import java.util.Objects;
-import java.util.function.Function;
+import java.lang.annotation.Annotation;
 
-import com.google.inject.Binder;
-import com.google.inject.Module;
+import com.google.inject.binder.AnnotatedBindingBuilder;
+import com.google.inject.binder.LinkedBindingBuilder;
+import com.google.inject.binder.ScopedBindingBuilder;
 
-public abstract class ModuleSupport<B extends Binder> implements Module {
-
-    private final ThreadLocal<B> binder = new ThreadLocal<B>();
-    private final Function<Binder, B> conversion;
-
-    protected ModuleSupport(Function<Binder, B> conversion) {
-        this.conversion = (binder) ->
-            conversion.apply(Objects.requireNonNull(binder, "Null binder")
-                                    .skipSources(this.getClass(), ModuleSupport.class));
-    }
+public interface AnnotatedBindingBuilderWithTypes<T,
+                                                  L extends LinkedBindingBuilder<T>,
+                                                  S extends ScopedBindingBuilder>
+extends LinkedBindingBuilderWithTypes<T, S>, AnnotatedBindingBuilder<T> {
 
     @Override
-    public final void configure(Binder binder) {
-        if (this.binder.get() != null) {
-            throw new IllegalStateException("Binder already specified in current thread");
-        } else try {
-            this.binder.set(conversion.apply(binder));
-            this.configure();
-        } finally {
-            this.binder.remove();
-        }
-    }
+    public L annotatedWith(Class<? extends Annotation> annotationType);
 
-    protected abstract void configure();
-
-    protected final B binder() {
-        final B binder = this.binder.get();
-        if (binder == null) throw new IllegalStateException("No binder available");
-        return binder;
-    }
+    @Override
+    public L annotatedWith(Annotation annotation);
 
 }

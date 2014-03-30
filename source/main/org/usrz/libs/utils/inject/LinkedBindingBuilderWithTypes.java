@@ -15,38 +15,45 @@
  * ========================================================================== */
 package org.usrz.libs.utils.inject;
 
+import java.lang.reflect.Constructor;
+
 import com.google.inject.Key;
-import com.google.inject.Module;
+import com.google.inject.Provider;
 import com.google.inject.TypeLiteral;
-import com.google.inject.binder.AnnotatedBindingBuilder;
-import com.google.inject.binder.AnnotatedConstantBindingBuilder;
 import com.google.inject.binder.LinkedBindingBuilder;
+import com.google.inject.binder.ScopedBindingBuilder;
 
+public interface LinkedBindingBuilderWithTypes<T, S extends ScopedBindingBuilder>
+extends LinkedBindingBuilder<T> {
 
-public abstract class BindingModuleSupport extends ModuleSupport {
+    @Override
+    public S to(Class<? extends T> implementation);
 
-    protected BindingModuleSupport() {
-        /* Nothing to do */
-    }
+    @Override
+    public S to(TypeLiteral<? extends T> implementation);
 
-    protected <T> LinkedBindingBuilder<T> bind(Key<T> key) {
-        return binder().bind(key);
-    }
+    @Override
+    public S to(Key<? extends T> targetKey);
 
-    protected <T> AnnotatedBindingBuilder<T> bind(TypeLiteral<T> typeLiteral) {
-        return binder().bind(typeLiteral);
-    }
+    @Override
+    public void toInstance(T instance);
 
-    protected <T> AnnotatedBindingBuilder<T> bind(Class<T> type) {
-        return binder().bind(type);
-    }
+    @Override
+    public S toProvider(Provider<? extends T> provider);
 
-    protected AnnotatedConstantBindingBuilder bindConstant() {
-        return binder().bindConstant();
-    }
+    @Override
+    public S toProvider(Class<? extends javax.inject.Provider<? extends T>> providerType);
 
-    protected void install(Module... modules) {
-        for (Module module: modules) binder().install(module);
-    }
+    @Override
+    public S toProvider(TypeLiteral<? extends javax.inject.Provider<? extends T>> providerType);
+
+    @Override
+    public S toProvider(Key<? extends javax.inject.Provider<? extends T>> providerKey);
+
+    @Override
+    public <X extends T> S toConstructor(Constructor<X> constructor);
+
+    @Override
+    public <X extends T> S toConstructor(Constructor<X> constructor, TypeLiteral<? extends X> type);
 
 }
