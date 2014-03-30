@@ -20,7 +20,6 @@ import static org.usrz.libs.utils.codecs.Base64Codec.BASE_64;
 
 import org.testng.annotations.Test;
 import org.usrz.libs.testing.AbstractTest;
-import org.usrz.libs.utils.codecs.Base64Codec;
 
 public class Base64CodecTest extends AbstractTest {
 
@@ -141,7 +140,7 @@ public class Base64CodecTest extends AbstractTest {
                 count ++;
             }
         }
-        System.err.println("Ran " + count + " iterations in " + (System.currentTimeMillis() - time) + " milliseconds");
+        log.info("Ran %d iterations in %d  milliseconds", count, (System.currentTimeMillis() - time));
     }
 
 }

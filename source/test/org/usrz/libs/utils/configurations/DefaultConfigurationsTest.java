@@ -18,12 +18,9 @@ package org.usrz.libs.utils.configurations;
 import java.io.IOException;
 
 import org.testng.annotations.Test;
-import org.usrz.libs.logging.Logging;
 import org.usrz.libs.testing.AbstractTest;
 
 public class DefaultConfigurationsTest extends AbstractTest {
-
-    static { Logging.init(); }
 
     @Test
     public void testDefaultConfigurations()

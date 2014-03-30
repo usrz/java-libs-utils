@@ -18,7 +18,6 @@ package org.usrz.libs.utils;
 import java.util.Map;
 
 import org.testng.annotations.Test;
-import org.usrz.libs.logging.Logging;
 import org.usrz.libs.testing.AbstractTest;
 import org.usrz.libs.utils.beans.Builder;
 import org.usrz.libs.utils.beans.GettableBean;
@@ -28,8 +27,6 @@ import org.usrz.libs.utils.beans.MapperBuilder;
 import org.usrz.libs.utils.beans.SettableBean;
 
 public class MapperBuilderTest extends AbstractTest {
-
-    static { Logging.init(); }
 
     private final MapperBuilder builder = new MapperBuilder();
 

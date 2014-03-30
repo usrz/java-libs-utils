@@ -16,12 +16,9 @@
 package org.usrz.libs.utils.beans;
 
 import org.testng.annotations.Test;
-import org.usrz.libs.logging.Logging;
 import org.usrz.libs.testing.AbstractTest;
 
 public class InstanceBuilderTest extends AbstractTest {
-
-    static { Logging.init(); }
 
     @Test
     public void testConstructableBean() {

@@ -44,7 +44,6 @@ public class JsonConfigurationsTest extends AbstractTest {
                         .build();
 
         final Configurations json = new JsonConfigurations(IO.resource("test.json"));
-        json.list(System.err);
 
         assertEquals(configurations, json);
     }
@@ -53,7 +52,7 @@ public class JsonConfigurationsTest extends AbstractTest {
           expectedExceptionsMessageRegExp = "^Invalid key name \\\"test.a wrong key\\\".*")
     public void testJsonWrongKey()
     throws Exception {
-        new ResourceConfigurations("wrongkey.json").list(System.err);
+        new ResourceConfigurations("wrongkey.json");
         fail("Exception not thrown");
     }
 }

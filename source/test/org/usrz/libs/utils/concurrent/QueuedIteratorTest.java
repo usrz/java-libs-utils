@@ -21,12 +21,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.testng.annotations.Test;
-import org.usrz.libs.logging.Log;
 import org.usrz.libs.testing.AbstractTest;
 
 public class QueuedIteratorTest extends AbstractTest {
-
-    private static final Log log = new Log();
 
     public void testQueuedIterator(int loopsize, int concurrency, int queuesize)
     throws Exception {

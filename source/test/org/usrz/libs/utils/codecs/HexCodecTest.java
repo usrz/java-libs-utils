@@ -17,7 +17,6 @@ package org.usrz.libs.utils.codecs;
 
 import org.testng.annotations.Test;
 import org.usrz.libs.testing.AbstractTest;
-import org.usrz.libs.utils.codecs.HexCodec;
 
 public class HexCodecTest extends AbstractTest {
 
@@ -118,6 +117,6 @@ public class HexCodecTest extends AbstractTest {
                 count ++;
             }
         }
-        System.err.println("Ran " + count + " iterations in " + (System.currentTimeMillis() - time) + " milliseconds");
+        log.info("Ran %d iterations in %d  milliseconds", count, (System.currentTimeMillis() - time));
     }
 }
