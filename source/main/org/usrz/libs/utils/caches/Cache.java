@@ -15,12 +15,34 @@
  * ========================================================================== */
 package org.usrz.libs.utils.caches;
 
+/**
+ * A <em>trivial</em> interface defining a component capable of caching
+ * instances of <em>key-value</em> mappings.
+ *
+ * @author <a href="mailto:pier@usrz.com">Pier Fumagalli</a>
+ * @param <K> The type of keys in this {@link Cache}.
+ * @param <V> The type ov values in this {@link Cache}.
+ */
 public interface Cache<K, V> {
 
-    public V get(K key);
+    /**
+     * Return the cached value associated with the given key or <em>null</em>.
+     */
+    public V fetch(K key);
 
-    public void put(K key, V value);
+    /**
+     * Associated the given value with the specified key.
+     * <p>
+     * If the specified value is <em>null</em> this call is equivalent to
+     * calling {@link #invalidate(Object)}.
+     *
+     * @throws NullPointerException If the specified key was <em>null</em>.
+     */
+    public void store(K key, V value);
 
+    /**
+     * Invalidate the mapping associated with the given key.
+     */
     public void invalidate(K key);
 
 }

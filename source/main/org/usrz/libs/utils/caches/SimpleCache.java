@@ -17,17 +17,25 @@ package org.usrz.libs.utils.caches;
 
 import java.util.concurrent.ConcurrentHashMap;
 
-public class ConcurrentHashMapCache<K, V> implements Cache<K, V> {
+/**
+ * A trivial {@link Cache} backed by a {@link ConcurrentHashMap}.
+ * <p>
+ * There are no limits imposed to the number of elements this cache can
+ * contain, henceforth it should be used in development/testing scenarios only.
+ *
+ * @author <a href="mailto:pier@usrz.com">Pier Fumagalli</a>
+ */
+public class SimpleCache<K, V> implements Cache<K, V> {
 
     private final ConcurrentHashMap<K, V> map = new ConcurrentHashMap<>();
 
     @Override
-    public V get(K key) {
+    public V fetch(K key) {
         return map.get(key);
     }
 
     @Override
-    public void put(K key, V value) {
+    public void store(K key, V value) {
         if (key == null) throw new NullPointerException("Null key");
         if (value == null) invalidate(key);
         else map.put(key, value);
