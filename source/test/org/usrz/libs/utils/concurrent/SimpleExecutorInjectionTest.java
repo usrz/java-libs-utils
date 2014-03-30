@@ -20,16 +20,23 @@ import java.util.concurrent.ExecutionException;
 import org.testng.annotations.Test;
 import org.usrz.libs.testing.AbstractTest;
 import org.usrz.libs.utils.configurations.Configurations;
+import org.usrz.libs.utils.configurations.ConfigurationsBinder;
 import org.usrz.libs.utils.configurations.ConfigurationsBuilder;
 import org.usrz.libs.utils.configurations.ConfigurationsModule;
 
 import com.google.inject.Guice;
 
+
 public class SimpleExecutorInjectionTest extends AbstractTest {
 
     @Test
-    public void testSimpleExecutorInjection() {
-        assertNotNull(Guice.createInjector().getInstance(SimpleExecutor.class));
+    public void testSimpleExecutorInjection()
+    throws InterruptedException, ExecutionException {
+        final SimpleExecutor executor = Guice.createInjector((binder) -> {
+            new ConfigurationsBinder(binder).bind(SimpleExecutor.class);
+        }).getInstance(SimpleExecutor.class);
+        final String threadName = executor.call(() -> Thread.currentThread().getName()).get();
+        assertTrue(threadName.matches("^SimpleExecutor@[\\dabcdef]+-[\\d]+$"), "Wrong thread name \"" + threadName);
     }
 
     @Test
@@ -45,13 +52,12 @@ public class SimpleExecutorInjectionTest extends AbstractTest {
                                 .build();
 
                         this.bind(SimpleExecutor.class)
-                            .toProvider(SimpleExecutorProvider.class)
                             .withConfigurations(configurations);
                     }
 
                 }).getInstance(SimpleExecutor.class);
         final String threadName = executor.call(() -> Thread.currentThread().getName()).get();
-        System.err.println(threadName);
+        assertTrue(threadName.matches("^FooBarBaz-[\\d]+$"), "Wrong thread name \"" + threadName);
     }
 
 }

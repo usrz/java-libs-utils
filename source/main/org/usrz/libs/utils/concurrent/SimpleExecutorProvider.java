@@ -32,11 +32,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.inject.Named;
 
 import org.usrz.libs.logging.Log;
-import org.usrz.libs.utils.configurations.Configurations;
 import org.usrz.libs.utils.configurations.ConfiguredProvider;
 
 import com.google.inject.Inject;
-import com.google.inject.Injector;
 import com.google.inject.ProvisionException;
 
 @SuppressWarnings("restriction")
@@ -99,22 +97,8 @@ public class SimpleExecutorProvider extends ConfiguredProvider<SimpleExecutor> {
         this.executorName = executorName;
     }
 
-    //@Inject
-    private void setConfigurations(Configurations configs) {
-        System.err.println("CONFIGURATIONS " + configs);
-        System.err.println("FOO");
-    }
-
-    @Inject
-    private void setInjector(Injector injector) {
-        System.err.println("INJECTOR IS " + injector);
-        System.err.println("FOO");
-    }
-
     @Override
     public SimpleExecutor get() {
-        System.err.println(executorName);
-
         final ThreadGroup group = new ThreadGroup(executorName);
         final BlockingQueue<Runnable> queue = new LinkedBlockingQueue<>(queueSize);
 
