@@ -29,16 +29,14 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.inject.Inject;
 import javax.inject.Named;
+import javax.inject.Provider;
 
+import org.usrz.libs.inject.Optional;
 import org.usrz.libs.logging.Log;
-import org.usrz.libs.utils.configurations.ConfiguredProvider;
 
-import com.google.inject.Inject;
-import com.google.inject.ProvisionException;
-
-@SuppressWarnings("restriction")
-public class SimpleExecutorProvider extends ConfiguredProvider<SimpleExecutor> {
+public class SimpleExecutorProvider implements Provider<SimpleExecutor> {
 
     public static final String CORE_POOL_SIZE = "corePoolSize";
     public static final String MAXIMUM_POOL_SIZE = "maximumPoolSize";
@@ -54,46 +52,46 @@ public class SimpleExecutorProvider extends ConfiguredProvider<SimpleExecutor> {
     private int threadPriority = NORM_PRIORITY;
     private String executorName = String.format("%s@%04x", SimpleExecutor.class.getSimpleName(), new Random().nextInt());
 
-    protected SimpleExecutorProvider() {
+    @Inject
+    private SimpleExecutorProvider() {
         /* Nothing to do */
     }
 
-    @Inject(optional=true)
+    @Inject @Optional
     private void setCorePoolSize(@Named(CORE_POOL_SIZE) int corePoolSize) {
-        if (corePoolSize < 0) throw new ProvisionException("Invalid corePoolSize " + corePoolSize);
+        if (corePoolSize < 0) throw new IllegalArgumentException("Invalid corePoolSize " + corePoolSize);
         this.corePoolSize = corePoolSize;
     }
 
-    @Inject(optional=true)
+    @Inject @Optional
     private void setMaximumPoolSize(@Named(MAXIMUM_POOL_SIZE) int maximumPoolSize) {
-        if (maximumPoolSize < 1) throw new ProvisionException("Invalid maximumPoolSize " + maximumPoolSize);
+        if (maximumPoolSize < 1) throw new IllegalArgumentException("Invalid maximumPoolSize " + maximumPoolSize);
         this.maximumPoolSize = maximumPoolSize;
     }
 
-    @Inject(optional=true)
+    @Inject @Optional
     private void setKeepAliveTime(@Named(KEEP_ALIVE_TIME) int keepAliveTime) {
-        if (keepAliveTime < 0) throw new ProvisionException("Invalid keepAliveTime " + keepAliveTime);
+        if (keepAliveTime < 0) throw new IllegalArgumentException("Invalid keepAliveTime " + keepAliveTime);
         this.keepAliveTime = keepAliveTime;
     }
 
-    @Inject(optional=true)
+    @Inject @Optional
     private void setQueueSize(@Named(QUEUE_SIZE) int queueSize) {
-        if (queueSize < 1) throw new ProvisionException("Invalid queueSize " + queueSize);
+        if (queueSize < 1) throw new IllegalArgumentException("Invalid queueSize " + queueSize);
         this.queueSize = queueSize;
     }
 
-    @Inject(optional=true)
+    @Inject @Optional
     private void setThreadPriority(@Named(THREAD_PRIORITY) int threadPriority) {
         if ((threadPriority < MIN_PRIORITY) || (threadPriority > MAX_PRIORITY))
-            throw new ProvisionException("Invalid threadPriority " + threadPriority);
+            throw new IllegalArgumentException("Invalid threadPriority " + threadPriority);
         this.threadPriority = threadPriority;
     }
 
-    @Inject(optional=true)
+    @Inject @Optional
     private void setExecutorName(@Named(EXECUTOR_NAME) String executorName) {
-
         if ((executorName == null) || (executorName.length() == 0))
-            throw new ProvisionException("Invalid executorName " + executorName);
+            throw new IllegalArgumentException("Invalid executorName " + executorName);
         this.executorName = executorName;
     }
 
