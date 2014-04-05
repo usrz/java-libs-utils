@@ -16,40 +16,30 @@
 package org.usrz.libs.utils.inject;
 
 import java.util.Objects;
-import java.util.function.Function;
 
-import com.google.inject.Binder;
-import com.google.inject.Module;
+import javax.inject.Inject;
 
-public abstract class ModuleSupport<B extends Binder> implements Module {
+import com.google.inject.Injector;
+import com.google.inject.Provider;
 
-    private final ThreadLocal<B> binder = new ThreadLocal<B>();
-    private final Function<Binder, B> conversion;
+public abstract class InjectorProvider<T> implements Provider<T> {
 
-    protected ModuleSupport(Function<Binder, B> conversion) {
-        this.conversion = (binder) ->
-            conversion.apply(Objects.requireNonNull(binder, "Null binder")
-                                    .skipSources(this.getClass(), ModuleSupport.class));
+    private Injector injector;
+
+    protected InjectorProvider() {
+        /* Nothing to do */
+    }
+
+    @Inject
+    private final void setInjector(Injector injector) {
+        this.injector = injector;
     }
 
     @Override
-    public void configure(Binder binder) {
-        if (this.binder.get() != null) {
-            throw new IllegalStateException("Binder already specified in current thread");
-        } else try {
-            this.binder.set(conversion.apply(binder));
-            this.configure();
-        } finally {
-            this.binder.remove();
-        }
+    public T get() {
+        return this.get(Objects.requireNonNull(injector, "Injector unavailable"));
     }
 
-    protected abstract void configure();
-
-    protected final B binder() {
-        final B binder = this.binder.get();
-        if (binder == null) throw new IllegalStateException("No binder available");
-        return binder;
-    }
+    protected abstract T get(Injector injector);
 
 }
