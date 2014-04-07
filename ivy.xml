@@ -16,11 +16,11 @@
   </publications>
 
   <dependencies>
-    <dependency org="org.usrz.libs" name="inject" rev="latest.release" conf="default"/>
     <dependency org="org.usrz.libs" name="logging" rev="latest.release" conf="default"/>
     <dependency org="org.usrz.libs" name="configurations" rev="latest.release" conf="default"/>
 
     <dependency org="com.google" name="guava" rev="latest.release" conf="default"/>
+    <dependency org="com.google" name="guice" rev="latest.release" conf="default"/>
     <dependency org="org.javassist" name="javassist" rev="latest.release" conf="default"/>
 
     <dependency org="com.fasterxml" name="jackson-databind" rev="latest.release" conf="testing-&gt;default"/>

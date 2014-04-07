@@ -19,15 +19,17 @@ import java.util.concurrent.ExecutionException;
 
 import org.testng.annotations.Test;
 import org.usrz.libs.configurations.ConfigurationsBuilder;
-import org.usrz.libs.inject.Injector;
 import org.usrz.libs.testing.AbstractTest;
+
+import com.google.inject.Guice;
+import com.google.inject.name.Names;
 
 public class SimpleExecutorInjectionTest extends AbstractTest {
 
     @Test
     public void testSimpleExecutorInjection()
     throws InterruptedException, ExecutionException {
-        final SimpleExecutor executor = Injector.create().getInstance(SimpleExecutor.class);
+        final SimpleExecutor executor = Guice.createInjector().getInstance(SimpleExecutor.class);
         final String threadName = executor.call(() -> Thread.currentThread().getName()).get();
         assertTrue(threadName.matches("^SimpleExecutor@[\\dabcdef]+-[\\d]+$"), "Wrong thread name \"" + threadName);
     }
@@ -35,10 +37,11 @@ public class SimpleExecutorInjectionTest extends AbstractTest {
     @Test
     public void testSimpleExecutorInjectionWithName()
     throws InterruptedException, ExecutionException {
-        final SimpleExecutor executor = Injector.create((binder) -> {
-            binder.configure(new ConfigurationsBuilder()
-                                 .put(SimpleExecutorProvider.EXECUTOR_NAME, "FooBarBaz")
-                                 .build());
+        final SimpleExecutor executor = Guice.createInjector((binder) -> {
+            Names.bindProperties(binder,
+                    new ConfigurationsBuilder()
+                            .put(SimpleExecutorProvider.EXECUTOR_NAME, "FooBarBaz")
+                            .build());
             binder.bind(SimpleExecutor.class).toProvider(SimpleExecutorProvider.class);
         }).getInstance(SimpleExecutor.class);
 

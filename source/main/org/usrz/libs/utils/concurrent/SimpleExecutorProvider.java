@@ -29,12 +29,12 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.inject.Inject;
 import javax.inject.Named;
-import javax.inject.Provider;
 
-import org.usrz.libs.inject.Optional;
 import org.usrz.libs.logging.Log;
+
+import com.google.inject.Inject;
+import com.google.inject.Provider;
 
 public class SimpleExecutorProvider implements Provider<SimpleExecutor> {
 
@@ -57,38 +57,38 @@ public class SimpleExecutorProvider implements Provider<SimpleExecutor> {
         /* Nothing to do */
     }
 
-    @Inject @Optional
+    @Inject(optional=true)
     private void setCorePoolSize(@Named(CORE_POOL_SIZE) int corePoolSize) {
         if (corePoolSize < 0) throw new IllegalArgumentException("Invalid corePoolSize " + corePoolSize);
         this.corePoolSize = corePoolSize;
     }
 
-    @Inject @Optional
+    @Inject(optional=true)
     private void setMaximumPoolSize(@Named(MAXIMUM_POOL_SIZE) int maximumPoolSize) {
         if (maximumPoolSize < 1) throw new IllegalArgumentException("Invalid maximumPoolSize " + maximumPoolSize);
         this.maximumPoolSize = maximumPoolSize;
     }
 
-    @Inject @Optional
+    @Inject(optional=true)
     private void setKeepAliveTime(@Named(KEEP_ALIVE_TIME) int keepAliveTime) {
         if (keepAliveTime < 0) throw new IllegalArgumentException("Invalid keepAliveTime " + keepAliveTime);
         this.keepAliveTime = keepAliveTime;
     }
 
-    @Inject @Optional
+    @Inject(optional=true)
     private void setQueueSize(@Named(QUEUE_SIZE) int queueSize) {
         if (queueSize < 1) throw new IllegalArgumentException("Invalid queueSize " + queueSize);
         this.queueSize = queueSize;
     }
 
-    @Inject @Optional
+    @Inject(optional=true)
     private void setThreadPriority(@Named(THREAD_PRIORITY) int threadPriority) {
         if ((threadPriority < MIN_PRIORITY) || (threadPriority > MAX_PRIORITY))
             throw new IllegalArgumentException("Invalid threadPriority " + threadPriority);
         this.threadPriority = threadPriority;
     }
 
-    @Inject @Optional
+    @Inject(optional=true)
     private void setExecutorName(@Named(EXECUTOR_NAME) String executorName) {
         if ((executorName == null) || (executorName.length() == 0))
             throw new IllegalArgumentException("Invalid executorName " + executorName);

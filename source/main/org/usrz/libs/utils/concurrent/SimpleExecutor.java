@@ -23,10 +23,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
 
-import org.usrz.libs.inject.ProvidedBy;
-
 import com.google.common.util.concurrent.ForwardingFuture;
 import com.google.common.util.concurrent.SettableFuture;
+import com.google.inject.ProvidedBy;
 
 @ProvidedBy(SimpleExecutorProvider.class)
 public class SimpleExecutor {
