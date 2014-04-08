@@ -78,13 +78,17 @@ public final class Injections {
         Binding<T> binding = injector.getExistingBinding(key);
         if (binding != null) return injector.getInstance(binding.getKey());
 
-        /* Annotation-type only? */
-        binding = injector.getExistingBinding(key.withoutAttributes());
-        if (binding != null) return injector.getInstance(binding.getKey());
+        /* Try to look up without attributes */
+        if (key.hasAttributes()) {
+            binding = injector.getExistingBinding(key.withoutAttributes());
+            if (binding != null) return injector.getInstance(binding.getKey());
+        }
 
-        /* Only type */
-        binding = injector.getExistingBinding(Key.get(key.getTypeLiteral()));
-        if (binding != null) return injector.getInstance(binding.getKey());
+        /* Do we have an annotation type? */
+        if (key.getAnnotationType() != null) {
+            binding = injector.getExistingBinding(Key.get(key.getTypeLiteral()));
+            if (binding != null) return injector.getInstance(binding.getKey());
+        }
 
         /* Nothing found (fail with the original key) */
         return optional ? null : injector.getInstance(key);
