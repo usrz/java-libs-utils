@@ -16,6 +16,7 @@
 package org.usrz.libs.utils;
 
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
+import static org.usrz.libs.utils.Check.notNull;
 
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Documented;
@@ -72,7 +73,11 @@ public final class Injections {
         return getInstance(injector, Key.get(type, annotation), optional);
     }
 
-    private static <T> T getInstance(Injector injector, Key<T> key, boolean optional) {
+    public static <T> T getInstance(Injector injector, Key<T> key) {
+        return getInstance(injector, notNull(key, "Null key"), false);
+    }
+
+    public static <T> T getInstance(Injector injector, Key<T> key, boolean optional) {
 
         /* Fully annotated? */
         Binding<T> binding = injector.getExistingBinding(key);
