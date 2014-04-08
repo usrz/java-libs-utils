@@ -15,14 +15,16 @@
  * ========================================================================== */
 package org.usrz.libs.utils;
 
+import java.net.URL;
+
 import javax.inject.Named;
 
 import org.testng.annotations.Test;
 import org.usrz.libs.testing.AbstractTest;
 
-import com.google.inject.ConfigurationException;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.google.inject.ProvisionException;
 import com.google.inject.name.Names;
 
 public class InjectionsTest extends AbstractTest {
@@ -55,35 +57,35 @@ public class InjectionsTest extends AbstractTest {
         assertNull(Injections.getInstance(injector, String.class, Named.class, true));
     }
 
-    @Test(expectedExceptions=ConfigurationException.class,
-          expectedExceptionsMessageRegExp="(?s).*No implementation.*Named\\(value=foo\\).*")
+    @Test(expectedExceptions=ProvisionException.class,
+          expectedExceptionsMessageRegExp="(?s).*Unable to find or create binding.*Named\\(value=foo\\).*")
     public void testInjectionsRequired1() {
         final Injector injector = Guice.createInjector();
-        Injections.getInstance(injector, String.class, Names.named("foo"), false);
+        Injections.getInstance(injector, URL.class, Names.named("foo"), false);
         fail("No exception");
     }
 
-    @Test(expectedExceptions=ConfigurationException.class,
-          expectedExceptionsMessageRegExp="(?s).*No implementation.*Named.*")
+    @Test(expectedExceptions=ProvisionException.class,
+          expectedExceptionsMessageRegExp="(?s).*Unable to find or create binding.*Named.*")
     public void testInjectionsRequired2() {
         final Injector injector = Guice.createInjector();
-        Injections.getInstance(injector, String.class, Named.class, false);
+        Injections.getInstance(injector, URL.class, Named.class, false);
         fail("No exception");
     }
 
-    @Test(expectedExceptions=ConfigurationException.class,
-          expectedExceptionsMessageRegExp="(?s).*No implementation.*Named\\(value=foo\\).*")
+    @Test(expectedExceptions=ProvisionException.class,
+          expectedExceptionsMessageRegExp="(?s).*Unable to find or create binding.*Named\\(value=foo\\).*")
       public void testInjectionsRequired3() {
           final Injector injector = Guice.createInjector();
-          Injections.getInstance(injector, String.class, Names.named("foo"));
+          Injections.getInstance(injector, URL.class, Names.named("foo"));
           fail("No exception");
       }
 
-      @Test(expectedExceptions=ConfigurationException.class,
-          expectedExceptionsMessageRegExp="(?s).*No implementation.*Named.*")
+      @Test(expectedExceptions=ProvisionException.class,
+          expectedExceptionsMessageRegExp="(?s).*Unable to find or create binding.*Named.*")
       public void testInjectionsRequired4() {
           final Injector injector = Guice.createInjector();
-          Injections.getInstance(injector, String.class, Named.class);
+          Injections.getInstance(injector, URL.class, Named.class);
           fail("No exception");
       }
 }
