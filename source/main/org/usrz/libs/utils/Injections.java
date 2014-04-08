@@ -31,6 +31,7 @@ import com.google.inject.Binder;
 import com.google.inject.Binding;
 import com.google.inject.Injector;
 import com.google.inject.Key;
+import com.google.inject.ProvisionException;
 import com.google.inject.TypeLiteral;
 
 public final class Injections {
@@ -40,6 +41,14 @@ public final class Injections {
     }
 
     /* ====================================================================== */
+
+    private static <T> Key<T> key(TypeLiteral<T> type, Class<? extends Annotation> annotationType, Annotation annotation) {
+        if (annotation != null) return Key.get(type, annotation);
+        if (annotationType != null) return Key.get(type, annotationType);
+        return Key.get(type);
+    }
+
+    /* ---------------------------------------------------------------------- */
 
     public static <T> T getInstance(Injector injector, Class<T> type, Class<? extends Annotation> annotationType) {
         return getInstance(injector, TypeLiteral.get(type), annotationType, false);
@@ -58,19 +67,19 @@ public final class Injections {
     }
 
     public static <T> T getInstance(Injector injector, TypeLiteral<T> type, Class<? extends Annotation> annotationType) {
-        return getInstance(injector, Key.get(type, annotationType), false);
+        return getInstance(injector, key(type, annotationType, null), false);
     }
 
     public static <T> T getInstance(Injector injector, TypeLiteral<T> type, Annotation annotation) {
-        return getInstance(injector, Key.get(type, annotation), false);
+        return getInstance(injector, key(type, null, annotation), false);
     }
 
     public static <T> T getInstance(Injector injector, TypeLiteral<T> type, Class<? extends Annotation> annotationType, boolean optional) {
-        return getInstance(injector, Key.get(type, annotationType), optional);
+        return getInstance(injector, key(type, annotationType, null), optional);
     }
 
     public static <T> T getInstance(Injector injector, TypeLiteral<T> type, Annotation annotation, boolean optional) {
-        return getInstance(injector, Key.get(type, annotation), optional);
+        return getInstance(injector, key(type, null, annotation), optional);
     }
 
     public static <T> T getInstance(Injector injector, Key<T> key) {
@@ -95,8 +104,18 @@ public final class Injections {
             if (binding != null) return injector.getInstance(binding.getKey());
         }
 
-        /* Nothing found (fail with the original key) */
-        return optional ? null : injector.getInstance(key);
+        /*
+         * Nothing found... Here we can do a couple of things, either fail
+         * with the original key (that's what was asked of us) or try to create
+         * a dynamic binding (we need to do so without annotations). Choice
+         * is, "let's do both": try to create a dynamic binding or (if we
+         * fail) wrap the exception and re-throw.
+         */
+        try {
+            return optional ? null : injector.getInstance(Key.get(key.getTypeLiteral()));
+        } catch (Exception exception) {
+            throw new ProvisionException("Unable to find or create binding for " + key, exception);
+        }
 
     }
 
