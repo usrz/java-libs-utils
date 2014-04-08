@@ -29,14 +29,11 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.inject.Named;
-
+import org.usrz.libs.configurations.ConfigurableProvider;
+import org.usrz.libs.configurations.Configurations;
 import org.usrz.libs.logging.Log;
 
-import com.google.inject.Inject;
-import com.google.inject.Provider;
-
-public class SimpleExecutorProvider implements Provider<SimpleExecutor> {
+public class SimpleExecutorProvider extends ConfigurableProvider<SimpleExecutor, SimpleExecutorProvider> {
 
     public static final String CORE_POOL_SIZE = "corePoolSize";
     public static final String MAXIMUM_POOL_SIZE = "maximumPoolSize";
@@ -45,58 +42,25 @@ public class SimpleExecutorProvider implements Provider<SimpleExecutor> {
     public static final String THREAD_PRIORITY = "threadPriority";
     public static final String EXECUTOR_NAME = "executorName";
 
-    private int corePoolSize = 0;
-    private int maximumPoolSize = Integer.MAX_VALUE;
-    private int keepAliveTime = 60;
-    private int queueSize = Integer.MAX_VALUE;
-    private int threadPriority = NORM_PRIORITY;
-    private String executorName = String.format("%s@%04x", SimpleExecutor.class.getSimpleName(), new Random().nextInt());
-
-    @Inject
-    private SimpleExecutorProvider() {
+    public SimpleExecutorProvider() {
         /* Nothing to do */
     }
 
-    @Inject(optional=true)
-    private void setCorePoolSize(@Named(CORE_POOL_SIZE) int corePoolSize) {
-        if (corePoolSize < 0) throw new IllegalArgumentException("Invalid corePoolSize " + corePoolSize);
-        this.corePoolSize = corePoolSize;
-    }
-
-    @Inject(optional=true)
-    private void setMaximumPoolSize(@Named(MAXIMUM_POOL_SIZE) int maximumPoolSize) {
-        if (maximumPoolSize < 1) throw new IllegalArgumentException("Invalid maximumPoolSize " + maximumPoolSize);
-        this.maximumPoolSize = maximumPoolSize;
-    }
-
-    @Inject(optional=true)
-    private void setKeepAliveTime(@Named(KEEP_ALIVE_TIME) int keepAliveTime) {
-        if (keepAliveTime < 0) throw new IllegalArgumentException("Invalid keepAliveTime " + keepAliveTime);
-        this.keepAliveTime = keepAliveTime;
-    }
-
-    @Inject(optional=true)
-    private void setQueueSize(@Named(QUEUE_SIZE) int queueSize) {
-        if (queueSize < 1) throw new IllegalArgumentException("Invalid queueSize " + queueSize);
-        this.queueSize = queueSize;
-    }
-
-    @Inject(optional=true)
-    private void setThreadPriority(@Named(THREAD_PRIORITY) int threadPriority) {
-        if ((threadPriority < MIN_PRIORITY) || (threadPriority > MAX_PRIORITY))
-            throw new IllegalArgumentException("Invalid threadPriority " + threadPriority);
-        this.threadPriority = threadPriority;
-    }
-
-    @Inject(optional=true)
-    private void setExecutorName(@Named(EXECUTOR_NAME) String executorName) {
-        if ((executorName == null) || (executorName.length() == 0))
-            throw new IllegalArgumentException("Invalid executorName " + executorName);
-        this.executorName = executorName;
+    public SimpleExecutorProvider(Configurations configurations) {
+        super();
+        with(configurations);
     }
 
     @Override
     public SimpleExecutor get() {
+        final String executorName  = configurations.get(EXECUTOR_NAME, String.format("%s@%04x", SimpleExecutor.class.getSimpleName(), new Random().nextInt()));
+
+        final int corePoolSize     = configurations.validate(CORE_POOL_SIZE,    0,                 (int value) -> value >= 0);
+        final int maximumPoolSize  = configurations.validate(MAXIMUM_POOL_SIZE, Integer.MAX_VALUE, (int value) -> value >= 1);
+        final int keepAliveTime    = configurations.validate(KEEP_ALIVE_TIME,   60,                (int value) -> value >= 0);
+        final int queueSize        = configurations.validate(QUEUE_SIZE,        Integer.MAX_VALUE, (int value) -> value >= 1);
+        final int threadPriority   = configurations.validate(THREAD_PRIORITY,   NORM_PRIORITY,     (int value) -> (value >= MIN_PRIORITY) && (value <= MAX_PRIORITY));
+
         final ThreadGroup group = new ThreadGroup(executorName);
         final BlockingQueue<Runnable> queue = new LinkedBlockingQueue<>(queueSize);
 
