@@ -35,12 +35,12 @@ import org.usrz.libs.logging.Log;
 
 public class SimpleExecutorProvider extends ConfigurableProvider<SimpleExecutor, SimpleExecutorProvider> {
 
-    public static final String CORE_POOL_SIZE = "corePoolSize";
-    public static final String MAXIMUM_POOL_SIZE = "maximumPoolSize";
-    public static final String KEEP_ALIVE_TIME = "keepAliveTime";
-    public static final String QUEUE_SIZE = "queueSize";
-    public static final String THREAD_PRIORITY = "threadPriority";
-    public static final String EXECUTOR_NAME = "executorName";
+    public static final String CORE_POOL_SIZE = "core_pool_size";
+    public static final String MAXIMUM_POOL_SIZE = "maximum_pool_size";
+    public static final String KEEP_ALIVE_TIME = "keep_alive_time";
+    public static final String QUEUE_SIZE = "queue_size";
+    public static final String THREAD_PRIORITY = "thread_priority";
+    public static final String EXECUTOR_NAME = "executor_name";
 
     public SimpleExecutorProvider() {
         /* Nothing to do */
