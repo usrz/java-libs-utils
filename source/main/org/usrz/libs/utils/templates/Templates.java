@@ -132,7 +132,7 @@ public class Templates {
     public Template getTemplate(URI location)
     throws IOException {
         final URI uri = base.resolve(location);
-        if (base.relativize(location).isAbsolute()) {
+        if (base.relativize(uri).isAbsolute()) {
             throw new IllegalArgumentException("Template URI \"" + uri + "\" must be relative to \"" + base + "\"");
         }
 
