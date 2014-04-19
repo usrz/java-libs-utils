@@ -18,6 +18,7 @@ package org.usrz.libs.utils.concurrent;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
+import java.io.Closeable;
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -28,13 +29,14 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class QueuedIterator<T> implements Iterator<T>, Acceptor<T> {
+public class QueuedIterator<T> implements Iterator<T>, Acceptor<T>, Closeable {
 
     private final long timeout;
     private final BlockingQueue<Optional<T>> queue;
     private final AtomicReference<Throwable> failure = new AtomicReference<>();
     private final AtomicReference<Optional<T>> last = new AtomicReference<>();
     private final Optional<T> end = Optional.empty(); // throws NoSuchElement
+    private boolean closed = false;
 
     /* ====================================================================== */
 
@@ -63,6 +65,7 @@ public class QueuedIterator<T> implements Iterator<T>, Acceptor<T> {
 
     @Override
     public boolean hasNext() {
+        if (closed) return false;
         if (last.get() != null) return true;
 
         try {
@@ -113,9 +116,17 @@ public class QueuedIterator<T> implements Iterator<T>, Acceptor<T> {
     /* ====================================================================== */
 
     @Override
-    public void accept(T instance) {
+    public void close() {
+        this.closed = true;
+    }
+
+    /* ====================================================================== */
+
+    @Override
+    public boolean accept(T instance) {
         try {
-            if (queue.offer(Optional.ofNullable(instance), timeout, NANOSECONDS)) return;
+            if (queue.offer(Optional.ofNullable(instance), timeout, NANOSECONDS))
+                return !closed;
             throw new IllegalStateException("Timeout");
         } catch (InterruptedException exception) {
             throw new IllegalStateException("Interrupted", exception);

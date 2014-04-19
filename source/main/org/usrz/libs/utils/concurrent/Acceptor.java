@@ -15,15 +15,17 @@
  * ========================================================================== */
 package org.usrz.libs.utils.concurrent;
 
-import java.util.function.Consumer;
+@FunctionalInterface
+public interface Acceptor<T> {
 
-public interface Acceptor<T> extends Consumer<T> {
+    default void completed() {
+        /* Do nothing */
+    }
 
-    public void completed();
+    default void failed(Throwable throwable) {
+        /* Do nothing */
+    }
 
-    public void failed(Throwable throwable);
-
-    @Override
-    public void accept(T t);
+    public boolean accept(T t);
 
 }
