@@ -20,21 +20,24 @@ import static org.usrz.libs.utils.Check.check;
 import java.security.SecureRandom;
 
 /**
- * Create random strings using a 62-character alphabet {@code [A-Za-z0-9]}.
+ * Various utilities dealing with {@link String}s.
  *
  * @author <a href="mailto:pier@usrz.com">Pier Fumagalli</a>
  */
-public final class RandomString {
+public final class Strings {
 
     private static final SecureRandom RANDOM = new SecureRandom();
     private static final char[] ALPHABET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".toCharArray();
     private static final int BOUND = ALPHABET.length;
 
-    private RandomString() {
+    private Strings() {
         throw new IllegalStateException("Do not construct");
     }
 
-    public static String get(int length) {
+    /**
+     * Create random strings using a 62-character alphabet {@code [A-Za-z0-9]}.
+     */
+    public static String random(int length) {
         final char[] data = new char[check(length, length > 0, "Invalid length " + length)];
         for (int x = 0; x < length; x ++) data[x] = ALPHABET[RANDOM.nextInt(BOUND)];
         return new String(data);

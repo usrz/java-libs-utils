@@ -27,26 +27,26 @@ public class RandomStringTest extends AbstractTest {
     public void testRandomness() {
         final Set<String> strings = new HashSet<>();
         for (int x = 0; x < 1000; x ++) {
-            assertTrue(strings.add(RandomString.get(32)));
+            assertTrue(strings.add(Strings.random(32)));
         }
     }
 
     @Test
     public void testLengths() {
         for (int x = 1; x <= 1000; x ++) {
-            assertEquals(RandomString.get(x).length(), x);
+            assertEquals(Strings.random(x).length(), x);
         }
     }
 
     @Test(expectedExceptions=IllegalArgumentException.class,
           expectedExceptionsMessageRegExp="Invalid length 0")
     public void testInvalidLength0() {
-        RandomString.get(0);
+        Strings.random(0);
     }
 
     @Test(expectedExceptions=IllegalArgumentException.class,
           expectedExceptionsMessageRegExp="Invalid length -1")
     public void testInvalidLengthNegative() {
-        RandomString.get(-1);
+        Strings.random(-1);
     }
 }
