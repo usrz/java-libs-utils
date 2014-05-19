@@ -30,6 +30,10 @@ public final class RandomString {
     private static final char[] ALPHABET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".toCharArray();
     private static final int BOUND = ALPHABET.length;
 
+    private RandomString() {
+        throw new IllegalStateException("Do not construct");
+    }
+
     public static String get(int length) {
         final char[] data = new char[check(length, length > 0, "Invalid length " + length)];
         for (int x = 0; x < length; x ++) data[x] = ALPHABET[RANDOM.nextInt(BOUND)];
