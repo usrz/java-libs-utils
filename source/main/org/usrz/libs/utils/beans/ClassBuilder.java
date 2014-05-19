@@ -198,6 +198,8 @@ public abstract class ClassBuilder {
             final CtConstructor constructor = CtNewConstructor.make(superConstructor.getParameterTypes(),
                                                                     superConstructor.getExceptionTypes(),
                                                                     generated);
+            final String signature = superConstructor.getGenericSignature();
+            if (signature != null) constructor.setGenericSignature(signature);
 
             /* Copy constructor *AND* constructor parameters annotations */
             final MethodInfo constructorInfo = constructor.getMethodInfo();
