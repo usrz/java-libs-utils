@@ -70,6 +70,7 @@ public class QueuedIteratorTest extends AbstractTest {
 
         assertEquals(exceptions.get(), 0, "Exceptions detected");
         assertEquals(count.get(), concurrency * loopsize, "Wrong number of results");
+        iterator.close();
 
     }
 
@@ -99,6 +100,7 @@ public class QueuedIteratorTest extends AbstractTest {
             assertSame(thrown, exception, "Exception differs");
         }
         assertEquals(count, 100, "Invalid count");
+        iterator.close();
     }
 
     @Test
@@ -131,6 +133,7 @@ public class QueuedIteratorTest extends AbstractTest {
         assertNotNull(exception.get(), "Exception is null");
         assertSame(exception.get().getClass(), IllegalStateException.class, "Invalid exception class");
         assertEquals(exception.get().getMessage(), "Timeout", "Invalid exception message");
+        iterator.close();
     }
 }
 
