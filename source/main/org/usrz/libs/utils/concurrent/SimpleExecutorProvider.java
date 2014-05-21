@@ -33,6 +33,8 @@ import org.usrz.libs.configurations.ConfigurableProvider;
 import org.usrz.libs.configurations.Configurations;
 import org.usrz.libs.logging.Log;
 
+import com.google.inject.Injector;
+
 public class SimpleExecutorProvider extends ConfigurableProvider<SimpleExecutor, SimpleExecutorProvider> {
 
     public static final String CORE_POOL_SIZE = "core_pool_size";
@@ -52,7 +54,7 @@ public class SimpleExecutorProvider extends ConfigurableProvider<SimpleExecutor,
     }
 
     @Override
-    public SimpleExecutor get() {
+    public SimpleExecutor get(Injector injector, Configurations configurations) {
         final String executorName  = configurations.get(EXECUTOR_NAME, String.format("%s@%04x", SimpleExecutor.class.getSimpleName(), new Random().nextInt()));
 
         final int corePoolSize     = configurations.validate(CORE_POOL_SIZE,    0,                 (int value) -> value >= 0);
