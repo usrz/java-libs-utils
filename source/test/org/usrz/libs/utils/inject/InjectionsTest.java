@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * ========================================================================== */
-package org.usrz.libs.utils;
+package org.usrz.libs.utils.inject;
 
 import java.net.URL;
 
@@ -21,6 +21,7 @@ import javax.inject.Named;
 
 import org.testng.annotations.Test;
 import org.usrz.libs.testing.AbstractTest;
+import org.usrz.libs.utils.inject.Injections;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;

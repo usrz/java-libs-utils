@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * ========================================================================== */
-package org.usrz.libs.utils;
+package org.usrz.libs.utils.inject;
 
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static org.usrz.libs.utils.Check.notNull;
