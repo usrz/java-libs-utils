@@ -29,9 +29,9 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.usrz.libs.configurations.ConfigurableProvider;
 import org.usrz.libs.configurations.Configurations;
 import org.usrz.libs.logging.Log;
+import org.usrz.libs.utils.inject.ConfigurableProvider;
 
 public class SimpleExecutorProvider extends ConfigurableProvider<SimpleExecutor, SimpleExecutorProvider> {
 
