@@ -17,6 +17,7 @@ package org.usrz.libs.utils.inject;
 
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
+import java.lang.annotation.Annotation;
 import java.lang.annotation.Retention;
 
 import javax.inject.Inject;
@@ -37,25 +38,9 @@ import com.google.inject.name.Names;
 public class ConfigurableProviderTest extends AbstractTest {
 
     @Test
-    public void testUnannotated() {
-        final TestObject instance = Guice.createInjector(new TestModule(),
-                (binder) -> binder.bind(TestObject.class).toProvider(TestProvider.class)
-            ).getInstance(TestObject.class);
-        assertEquals(instance.getString(), "unannotated");
-    }
-
-    @Test
-    public void testUnannotatedInstance() {
-        final TestObject instance = Guice.createInjector(new TestModule(),
-                (binder) -> binder.bind(TestObject.class).toProvider(new TestProvider())
-            ).getInstance(TestObject.class);
-        assertEquals(instance.getString(), "unannotated");
-    }
-
-    @Test
     public void testUnannotatedOverridden() {
         final TestObject instance = Guice.createInjector(new TestModule(),
-                (binder) -> binder.bind(TestObject.class).toProvider(new TestProvider().with(new ConfigurationsBuilder().put("foo", "override").build()))
+                (binder) -> binder.bind(TestObject.class).toProvider(new TestProvider(new ConfigurationsBuilder().put("foo", "override").build()))
             ).getInstance(TestObject.class);
         assertEquals(instance.getString(), "override");
     }
@@ -63,7 +48,7 @@ public class ConfigurableProviderTest extends AbstractTest {
     @Test
     public void testAnnotationType() {
         final TestObject instance = Guice.createInjector(new TestModule(),
-                (binder) -> binder.bind(TestObject.class).toProvider(new TestProvider().with(TestAnnotation.class))
+                (binder) -> binder.bind(TestObject.class).toProvider(new TestProvider(TestAnnotation.class))
             ).getInstance(TestObject.class);
         assertEquals(instance.getString(), "withAnnotationType");
     }
@@ -71,15 +56,15 @@ public class ConfigurableProviderTest extends AbstractTest {
     @Test
     public void testAnnotationTypeUnbound() {
         final TestObject instance = Guice.createInjector(new TestModule(),
-                (binder) -> binder.bind(TestObject.class).toProvider(new TestProvider().with(Named.class))
+                (binder) -> binder.bind(TestObject.class).toProvider(new TestProvider(Named.class))
             ).getInstance(TestObject.class);
-        assertEquals(instance.getString(), "unannotated");
+        assertEquals(instance.getString(), "defaultValue"); // not explicitly bound, empty config
     }
 
     @Test
     public void testAnnotation() {
         final TestObject instance = Guice.createInjector(new TestModule(),
-                (binder) -> binder.bind(TestObject.class).toProvider(new TestProvider().with("named"))
+                (binder) -> binder.bind(TestObject.class).toProvider(new TestProvider("named"))
             ).getInstance(TestObject.class);
         assertEquals(instance.getString(), "withAnnotation");
     }
@@ -87,15 +72,15 @@ public class ConfigurableProviderTest extends AbstractTest {
     @Test
     public void testAnnotationUnbound() {
         final TestObject instance = Guice.createInjector(new TestModule(),
-                (binder) -> binder.bind(TestObject.class).toProvider(new TestProvider().with("blah"))
+                (binder) -> binder.bind(TestObject.class).toProvider(new TestProvider("blah"))
             ).getInstance(TestObject.class);
-        assertEquals(instance.getString(), "unannotated");
+        assertEquals(instance.getString(), "defaultValue"); // not explicitly bound, empty config
     }
 
     @Test
     public void testUnbound() {
         final TestObject instance = Guice.createInjector(
-                (binder) -> binder.bind(TestObject.class).toProvider(new TestProvider().with("blah"))
+                (binder) -> binder.bind(TestObject.class).toProvider(new TestProvider("blah"))
             ).getInstance(TestObject.class);
         assertEquals(instance.getString(), "defaultValue");
     }
@@ -114,7 +99,23 @@ public class ConfigurableProviderTest extends AbstractTest {
         }
     }
 
-    public static class TestProvider extends ConfigurableProvider<TestObject, TestProvider> {
+    public static class TestProvider extends ConfigurableProvider<TestObject> {
+
+        private TestProvider(String name) {
+            super(name);
+        }
+
+        private TestProvider(Annotation annotation) {
+            super(annotation);
+        }
+
+        private TestProvider(Class<? extends Annotation> annotation) {
+            super(annotation);
+        }
+
+        private TestProvider(Configurations configurations) {
+            super(configurations);
+        }
 
         @Override
         protected TestObject get(Configurations configurations) {

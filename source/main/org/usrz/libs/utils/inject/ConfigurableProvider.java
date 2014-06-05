@@ -18,12 +18,13 @@ package org.usrz.libs.utils.inject;
 import static org.usrz.libs.configurations.Configurations.EMPTY_CONFIGURATIONS;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
 
-import javax.inject.Named;
 import javax.inject.Provider;
 import javax.inject.Qualifier;
 
 import org.usrz.libs.configurations.Configurations;
+import org.usrz.libs.utils.Check;
 
 import com.google.inject.Binding;
 import com.google.inject.Injector;
@@ -46,121 +47,94 @@ import com.google.inject.name.Names;
  * @param <T> The type of instances managed by this {@link Provider}.
  * @param <P> The actual type of this provider.
  */
-public abstract class ConfigurableProvider<T, P extends ConfigurableProvider<T, P>>
+public abstract class ConfigurableProvider<T>
 extends InjectingProvider<T> {
 
-    private static final Key<Configurations> KEY = Key.get(Configurations.class);
-
-    @SuppressWarnings("unchecked")
-    private final P thisInstance = (P) this;
-
-    private Configurations configurations = null;
-    private Key<Configurations> key = KEY;
+    private final Key<Configurations> key;
+    private Configurations configurations;
 
     /* ====================================================================== */
 
     /**
      * Create a new {@link ConfigurableProvider} instance.
      */
-    protected ConfigurableProvider() {
+    protected ConfigurableProvider(String name) {
+        this(Names.named(name));
+    }
+
+    /**
+     * Create a new {@link ConfigurableProvider} instance.
+     */
+    protected ConfigurableProvider(String name, boolean singleton) {
+        this(Names.named(name), singleton);
+    }
+
+    /**
+     * Create a new {@link ConfigurableProvider} instance.
+     */
+    protected ConfigurableProvider(Annotation annotation) {
         super();
+        key = Key.get(Configurations.class, annotation);
+        configurations = null;
     }
 
     /**
      * Create a new {@link ConfigurableProvider} instance.
      */
-    protected ConfigurableProvider(boolean singleton) {
+    protected ConfigurableProvider(Annotation annotation, boolean singleton) {
         super(singleton);
-    }
-
-    /* ====================================================================== */
-
-    /**
-     * Specify and override anything from the {@link Injector} the actual
-     * {@link Configurations} instance to use.
-     */
-    public final P with(Configurations configurations) {
-        if (configurations == null) throw new NullPointerException("Null Configurations");
-        this.configurations = configurations;
-        this.key = null;
-        return thisInstance;
-    }
-
-    /**
-     * Specify the name of a {@link Named} qualifying the {@link Configurations}
-     * instance to retrieve from the {@link Injector}.
-     */
-    public final P with(String name) {
-        if (name == null) throw new NullPointerException("Null name");
-        return this.with(Names.named(name));
-    }
-
-    /**
-     * Specify the {@link Annotation} qualifying the {@link Configurations}
-     * instance to retrieve from the {@link Injector}.
-     */
-    public final P with(Annotation annotation) {
-        if (annotation == null) throw new NullPointerException("Null annotation");
-        if (key == null) throw new IllegalStateException("Configurations already set up");
         key = Key.get(Configurations.class, annotation);
-        return thisInstance;
+        configurations = null;
     }
 
     /**
-     * Specify the {@link Annotation} type qualifying the {@link Configurations}
-     * instance to retrieve from the {@link Injector}.
+     * Create a new {@link ConfigurableProvider} instance.
      */
-    public final P with(Class<? extends Annotation> annotationType) {
-        if (annotationType == null) throw new NullPointerException("Null annotation type");
-        if (key == null) throw new IllegalStateException("Configurations already set up");
-        key = Key.get(Configurations.class, annotationType);
-        return thisInstance;
+    protected ConfigurableProvider(Class<? extends Annotation> annotation) {
+        super();
+        key = Key.get(Configurations.class, annotation);
+        configurations = null;
+    }
+
+    /**
+     * Create a new {@link ConfigurableProvider} instance.
+     */
+    protected ConfigurableProvider(Class<? extends Annotation> annotation, boolean singleton) {
+        super(singleton);
+        key = Key.get(Configurations.class, annotation);
+        configurations = null;
+    }
+
+    /**
+     * Create a new {@link ConfigurableProvider} instance.
+     */
+    protected ConfigurableProvider(Configurations configurations) {
+        super();
+        key = null;
+        this.configurations = Check.notNull(configurations, "Null configurations");
+    }
+
+    /**
+     * Create a new {@link ConfigurableProvider} instance.
+     */
+    protected ConfigurableProvider(Configurations configurations, boolean singleton) {
+        super(singleton);
+        key = null;
+        this.configurations = Check.notNull(configurations, "Null configurations");
     }
 
     /* ====================================================================== */
 
-    /**
-     * Return a {@link Key} of the specified <em>type</em> with the same
-     * qualifier attributes configured to retrieve the {@link Configurations}
-     * for this instance.
-     */
     protected final <X> Key<X> key(Class<X> type) {
-        return this.key == null ? Key.get(type) : this.key.ofType(type);
+        return key == null ? Key.get(type) : key.ofType(type);
     }
 
-    /**
-     * Return a {@link Key} of the specified <em>type</em> with the same
-     * qualifier attributes configured to retrieve the {@link Configurations}
-     * for this instance.
-     */
     protected final <X> Key<X> key(TypeLiteral<X> type) {
-        return this.key == null ? Key.get(type) : this.key.ofType(type);
+        return key == null ? Key.get(type) : key.ofType(type);
     }
 
-    /* ====================================================================== */
-
-    private Configurations getConfigurations(Injector injector) {
-        /* Already gotten? */
-        if (configurations != null) return configurations;
-
-        /* Fully annotated? */
-        Binding<Configurations> binding = injector.getExistingBinding(key);
-        if (binding != null) return injector.getInstance(binding.getKey());
-
-        /* Try to look up without attributes */
-        if (key.hasAttributes()) {
-            binding = injector.getExistingBinding(key.withoutAttributes());
-            if (binding != null) return injector.getInstance(binding.getKey());
-        }
-
-        /* Do we have an annotation type? */
-        if (key.getAnnotationType() != null) {
-            binding = injector.getExistingBinding(Key.get(key.getTypeLiteral()));
-            if (binding != null) return injector.getInstance(binding.getKey());
-        }
-
-        /* Nothing found */
-        return EMPTY_CONFIGURATIONS;
+    protected final Key<?> key(Type type) {
+        return key == null ? Key.get(type) : key.ofType(type);
     }
 
     /* ====================================================================== */
@@ -168,8 +142,16 @@ extends InjectingProvider<T> {
     @Override
     public final T get(Injector injector)
     throws Exception {
-        /* Get the configurations if we haven't gotten them already */
-        return this.get(injector, getConfigurations(injector));
+
+        /* Get the configurations */
+        if (this.configurations == null) {
+            final Binding<Configurations> binding = injector.getExistingBinding(key);
+            configurations = binding == null ? EMPTY_CONFIGURATIONS :
+                             injector.getInstance(binding.getKey());
+        }
+
+        /* Get our instance */
+        return this.get(injector, configurations);
     }
 
     /**

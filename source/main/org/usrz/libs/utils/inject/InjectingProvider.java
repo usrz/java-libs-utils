@@ -15,11 +15,7 @@
  * ========================================================================== */
 package org.usrz.libs.utils.inject;
 
-import java.util.function.Function;
-
 import javax.inject.Provider;
-
-import org.usrz.libs.utils.Check;
 
 import com.google.inject.Injector;
 import com.google.inject.ProvisionException;
@@ -89,31 +85,5 @@ implements javax.inject.Provider<T>,
      */
     protected abstract T get(Injector injector)
     throws Exception;
-
-    /* ====================================================================== */
-
-    /**
-     * Create a new {@link InjectingProvider} from the specified function.
-     * <p>
-     * The specified {@link Function} will be called only <em>once</em> and
-     * its returned value will be used as a <em>singleton</em>.
-     */
-    public static final <T> Provider<T> from(final Function<Injector, T> function) {
-        return from(true, function);
-    }
-
-    /**
-     * Create a new {@link InjectingProvider} from the specified function.
-     * <p>
-     * As with the {@linkplain #InjectingProvider(boolean) constructor}, the
-     * {@code singleton} flag will determine if the {@link Function} is invoked
-     * only <em>once</em> or each time an instance is required.
-     */
-    public static final <T> Provider<T> from(boolean singleton, final Function<Injector, T> function) {
-        Check.notNull(function, "Null creation function");
-        return new InjectingProvider<T>(singleton) {
-            @Override public T get(Injector injector) { return function.apply(injector); }
-        };
-    }
 
 }

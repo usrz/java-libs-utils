@@ -22,6 +22,7 @@ import org.usrz.libs.testing.AbstractTest;
 import org.usrz.libs.utils.Strings;
 
 import com.google.inject.Guice;
+import com.google.inject.Injector;
 
 public class InjectingProviderTest extends AbstractTest {
 
@@ -33,9 +34,11 @@ public class InjectingProviderTest extends AbstractTest {
         final TestObject test = Guice.createInjector((binder) -> {
             binder.bind(String.class).toInstance(string);
             binder.bind(Object.class).toInstance(object);
-            binder.bind(TestObject.class).toProvider(InjectingProvider.from((injector) -> {
-                return new TestObject(injector.getInstance(String.class));
-            }));
+            binder.bind(TestObject.class).toProvider(new InjectingProvider<TestObject>() {
+                @Override protected TestObject get(Injector injector) throws Exception {
+                    return new TestObject(injector.getInstance(String.class));
+                }
+            });
         }).getInstance(TestObject.class);
 
         assertSame(test.string, string, "Wrong string");
