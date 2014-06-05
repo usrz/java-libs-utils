@@ -18,7 +18,6 @@ package org.usrz.libs.utils.concurrent;
 import java.util.concurrent.ExecutionException;
 
 import org.testng.annotations.Test;
-import org.usrz.libs.configurations.Configurations;
 import org.usrz.libs.configurations.ConfigurationsBuilder;
 import org.usrz.libs.testing.AbstractTest;
 
@@ -39,10 +38,10 @@ public class SimpleExecutorInjectionTest extends AbstractTest {
     public void testSimpleExecutorInjectionWithName()
     throws InterruptedException, ExecutionException {
         final SimpleExecutor executor = Guice.createInjector((binder) -> {
-            binder.bind(Configurations.class).toInstance(new ConfigurationsBuilder()
+            binder.bind(SimpleExecutor.class).toProvider(new SimpleExecutorProvider(
+                    new ConfigurationsBuilder()
                             .put(SimpleExecutorProvider.EXECUTOR_NAME, "FooBarBaz")
-                            .build());
-            binder.bind(SimpleExecutor.class).toProvider(SimpleExecutorProvider.class);
+                            .build()));
         }).getInstance(SimpleExecutor.class);
 
         final String threadName = executor.call(() -> Thread.currentThread().getName()).get();

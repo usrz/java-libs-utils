@@ -18,7 +18,9 @@ package org.usrz.libs.utils.concurrent;
 import static java.lang.Thread.MAX_PRIORITY;
 import static java.lang.Thread.MIN_PRIORITY;
 import static java.lang.Thread.NORM_PRIORITY;
+import static org.usrz.libs.configurations.Configurations.EMPTY_CONFIGURATIONS;
 
+import java.lang.annotation.Annotation;
 import java.util.Random;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -33,7 +35,7 @@ import org.usrz.libs.configurations.Configurations;
 import org.usrz.libs.logging.Log;
 import org.usrz.libs.utils.inject.ConfigurableProvider;
 
-public class SimpleExecutorProvider extends ConfigurableProvider<SimpleExecutor, SimpleExecutorProvider> {
+public class SimpleExecutorProvider extends ConfigurableProvider<SimpleExecutor> {
 
     public static final String CORE_POOL_SIZE = "core_pool_size";
     public static final String MAXIMUM_POOL_SIZE = "maximum_pool_size";
@@ -43,12 +45,23 @@ public class SimpleExecutorProvider extends ConfigurableProvider<SimpleExecutor,
     public static final String EXECUTOR_NAME = "executor_name";
 
     public SimpleExecutorProvider() {
-        /* Nothing to do */
+        this(EMPTY_CONFIGURATIONS);
+    }
+
+    public SimpleExecutorProvider(String name) {
+        super(name);
+    }
+
+    public SimpleExecutorProvider(Annotation annotation) {
+        super(annotation);
+    }
+
+    public SimpleExecutorProvider(Class<? extends Annotation> annotation) {
+        super(annotation);
     }
 
     public SimpleExecutorProvider(Configurations configurations) {
-        super();
-        with(configurations);
+        super(configurations);
     }
 
     @Override
