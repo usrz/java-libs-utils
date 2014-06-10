@@ -55,13 +55,6 @@ public class ObjectMapperTest extends AbstractTest {
 
     /* ====================================================================== */
 
-    @Test(expectedExceptions=ConfigurationException.class,
-          expectedExceptionsMessageRegExp="(?s).*No implementation for java\\.lang\\.Number was bound.*")
-    public void testLombokFail()
-    throws Exception {
-        getMapper((c) -> {}).readValue("{}", LombokBean.class);
-    }
-
     @Test
     public void testLombok()
     throws Exception {
@@ -74,7 +67,7 @@ public class ObjectMapperTest extends AbstractTest {
         assertSame   (bean.constructorInjected, injectableObject);
         assertSame   (bean.methodInjected,      injectableNumber);
         assertSame   (bean.fieldInjected,       injectableString);
-        assertSame   (bean.constructorValue,    injectableString); // @ConstructorPropery enables injection of String
+        assertNull   (bean.constructorValue);
         assertNull   (bean.methodValue);
         assertNull   (bean.fieldValue);
 
@@ -88,16 +81,22 @@ public class ObjectMapperTest extends AbstractTest {
         assertEquals (bean.methodValue,         "myMethodValue");
         assertEquals (bean.fieldValue,          "myFieldValue");
 
-        bean = mapper.readValue("{\"constructor_injected\":\"myConstructorInjected\",\"constructor_value\":\"myConstructorValue\",\"method_value\":\"myMethodValue\",\"field_value\":\"myFieldValue\"}", LombokBean.class);
-        log.debug("Extras Bean: %s", bean);
-        assertNotNull(bean);
-        assertEquals (bean.constructorInjected, "myConstructorInjected"); // @ConstructorProperty overrides injection
-        assertSame   (bean.methodInjected,      injectableNumber);
-        assertSame   (bean.fieldInjected,       injectableString);
-        assertEquals (bean.constructorValue,    "myConstructorValue");
-        assertEquals (bean.methodValue,         "myMethodValue");
-        assertEquals (bean.fieldValue,          "myFieldValue");
     }
+
+    @Test(expectedExceptions=ConfigurationException.class,
+          expectedExceptionsMessageRegExp="(?s).*No implementation for java\\.lang\\.Number was bound.*")
+    public void testLombokFailImplementationNotBound()
+    throws Exception {
+        getMapper((c) -> {}).readValue("{}", LombokBean.class);
+    }
+
+    @Test(expectedExceptions=UnrecognizedPropertyException.class,
+          expectedExceptionsMessageRegExp="(?s)^Unrecognized field \"constructor_injected\".*")
+    public void testLombokFailUnrecognizedProperty()
+    throws Exception {
+        getMapper(module).readValue("{\"constructor_injected\":\"myConstructorInjected\",\"constructor_value\":\"myConstructorValue\",\"method_value\":\"myMethodValue\",\"field_value\":\"myFieldValue\"}", LombokBean.class);
+    }
+
 
     @Test
     public void testLombokExt()
@@ -128,7 +127,7 @@ public class ObjectMapperTest extends AbstractTest {
 
     @Test(expectedExceptions=UnrecognizedPropertyException.class,
           expectedExceptionsMessageRegExp="(?s)^Unrecognized field \"constructor_injected\".*")
-    public void testLombokExtFail()
+    public void testLombokExtFailUnrecognizedProperty()
     throws Exception {
         getMapper(module).readValue("{\"constructor_injected\":\"myConstructorInjected\",\"constructor_value\":\"myConstructorValue\",\"method_value\":\"myMethodValue\",\"field_value\":\"myFieldValue\"}", LombokBeanExt.class);
     }
@@ -143,6 +142,7 @@ public class ObjectMapperTest extends AbstractTest {
         @Inject
         private String fieldInjected;
         // From the constructor, injected
+        @Inject
         private final Object constructorInjected;
         // From the setter, injected
         private Number methodInjected;
@@ -164,10 +164,9 @@ public class ObjectMapperTest extends AbstractTest {
 
         @JsonCreator
         public LombokBeanExt(@JacksonInject Object injectedObject,
-                            @JsonProperty("constructorValue") String constructorValue) {
+                             @JsonProperty("constructorValue") String constructorValue) {
             super(injectedObject, constructorValue);
         }
-
 
     }
 }

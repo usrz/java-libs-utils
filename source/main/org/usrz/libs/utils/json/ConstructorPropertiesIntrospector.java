@@ -17,6 +17,7 @@ package org.usrz.libs.utils.json;
 
 import java.beans.ConstructorProperties;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 
 import javax.inject.Qualifier;
 
@@ -88,30 +89,48 @@ public class ConstructorPropertiesIntrospector extends NopAnnotationIntrospector
          * return the property name (wrapped in Jackson's own type).
          */
         final String property = findConstructorPropertyName(annotated);
-        return property == null ? null : new PropertyName(property);
+        if (property == null) return null;
+
+        /* Only return a property name if this is not injectable */
+        return findInjectableValueId((AnnotatedMember) annotated) == null ?
+                   new PropertyName(property) : null;
     }
 
     @Override
+    @SuppressWarnings("restriction")
     public Object findInjectableValueId(AnnotatedMember member) {
 
         /* Check if this is a parameter of a @ConstructorProperties annotated constructor */
-        if (findConstructorPropertyName(member) != null) {
-            for (Annotation annotation : member.annotations()) {
+        final String property = findConstructorPropertyName(member);
+        if (property == null) return null;
 
-                /* Check on Guice (BindingAnnotation) & javax (Qualifier) based injections */
-                if (annotation.annotationType().isAnnotationPresent(BindingAnnotation.class) ||
-                    annotation.annotationType().isAnnotationPresent(Qualifier.class)) {
+        /* Analyse if the field exist, and is annotated with @Inject */
+        try {
+            final Field field = member.getDeclaringClass().getDeclaredField(property);
+            if (field.isAnnotationPresent(javax.inject.Inject.class) ||
+                field.isAnnotationPresent(com.google.inject.Inject.class)) {
 
-                    /* If we found a binding annotation, return the key */
-                    return Key.get(member.getGenericType(), annotation);
+                /* If we have an @Inject, check for binding annotations */
+                for (Annotation annotation : member.annotations()) {
+
+                    /* Check on Guice (BindingAnnotation) & javax (Qualifier) based injections */
+                    if (annotation.annotationType().isAnnotationPresent(BindingAnnotation.class) ||
+                        annotation.annotationType().isAnnotationPresent(Qualifier.class)) {
+
+                        /* If we found a binding annotation, return the key */
+                        return Key.get(member.getGenericType(), annotation);
+                    }
                 }
+
+                /* No binding annotation, just the generic type */
+                return Key.get(member.getGenericType());
             }
 
-            /* No binding annotation, only generic type */
-            return Key.get(member.getGenericType());
+        } catch (NoSuchFieldException exception) {
+            /* Ignore this, really */
         }
 
-        /* Not a parameter, not annotated with @ConstructorProperties, ... */
+        /* Field not existing, or not annotated with @Inject */
         return null;
     }
 
