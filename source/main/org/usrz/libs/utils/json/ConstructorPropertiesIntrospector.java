@@ -21,7 +21,6 @@ import java.lang.reflect.Field;
 
 import javax.inject.Qualifier;
 
-import com.fasterxml.jackson.databind.PropertyName;
 import com.fasterxml.jackson.databind.RuntimeJsonMappingException;
 import com.fasterxml.jackson.databind.introspect.Annotated;
 import com.fasterxml.jackson.databind.introspect.AnnotatedConstructor;
@@ -82,7 +81,7 @@ public class ConstructorPropertiesIntrospector extends NopAnnotationIntrospector
     /* ====================================================================== */
 
     @Override
-    public PropertyName findNameForDeserialization(Annotated annotated) {
+    public String findImplicitPropertyName(AnnotatedMember annotated) {
 
         /*
          * If this is a parameter of a @ConstructorProperties annotated constructor,
@@ -92,8 +91,7 @@ public class ConstructorPropertiesIntrospector extends NopAnnotationIntrospector
         if (property == null) return null;
 
         /* Only return a property name if this is not injectable */
-        return findInjectableValueId((AnnotatedMember) annotated) == null ?
-                   new PropertyName(property) : null;
+        return findInjectableValueId(annotated) == null ? property : null;
     }
 
     @Override

@@ -164,7 +164,7 @@ public class ObjectMapperTest extends AbstractTest {
 
         @JsonCreator
         public LombokBeanExt(@JacksonInject Object injectedObject,
-                             @JsonProperty("constructorValue") String constructorValue) {
+                             @JsonProperty("constructor_value") String constructorValue) {
             super(injectedObject, constructorValue);
         }
 
