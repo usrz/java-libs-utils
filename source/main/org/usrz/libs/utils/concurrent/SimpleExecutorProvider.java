@@ -18,9 +18,11 @@ package org.usrz.libs.utils.concurrent;
 import static java.lang.Thread.MAX_PRIORITY;
 import static java.lang.Thread.MIN_PRIORITY;
 import static java.lang.Thread.NORM_PRIORITY;
+import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static org.usrz.libs.configurations.Configurations.EMPTY_CONFIGURATIONS;
 
 import java.lang.annotation.Annotation;
+import java.time.Duration;
 import java.util.Random;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -28,7 +30,6 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.usrz.libs.configurations.Configurations;
@@ -68,11 +69,11 @@ public class SimpleExecutorProvider extends ConfigurableProvider<SimpleExecutor>
     protected SimpleExecutor get(Configurations configurations) {
         final String executorName  = configurations.get(EXECUTOR_NAME, String.format("%s@%04x", SimpleExecutor.class.getSimpleName(), new Random().nextInt()));
 
-        final int corePoolSize     = configurations.validate(CORE_POOL_SIZE,    0,                 (int value) -> value >= 0);
-        final int maximumPoolSize  = configurations.validate(MAXIMUM_POOL_SIZE, Integer.MAX_VALUE, (int value) -> value >= 1);
-        final int keepAliveTime    = configurations.validate(KEEP_ALIVE_TIME,   60,                (int value) -> value >= 0);
-        final int queueSize        = configurations.validate(QUEUE_SIZE,        Integer.MAX_VALUE, (int value) -> value >= 1);
-        final int threadPriority   = configurations.validate(THREAD_PRIORITY,   NORM_PRIORITY,     (int value) -> (value >= MIN_PRIORITY) && (value <= MAX_PRIORITY));
+        final int corePoolSize     = configurations.validate(CORE_POOL_SIZE,    0,                      (int value) -> value >= 0);
+        final int maximumPoolSize  = configurations.validate(MAXIMUM_POOL_SIZE, Integer.MAX_VALUE,      (int value) -> value >= 1);
+        final int queueSize        = configurations.validate(QUEUE_SIZE,        Integer.MAX_VALUE,      (int value) -> value >= 1);
+        final int threadPriority   = configurations.validate(THREAD_PRIORITY,   NORM_PRIORITY,          (int value) -> (value >= MIN_PRIORITY) && (value <= MAX_PRIORITY));
+        final Duration keepAlive   = configurations.validate(KEEP_ALIVE_TIME,   Duration.ofSeconds(60), (Duration value) -> value.getNano() >= 0);
 
         final ThreadGroup group = new ThreadGroup(executorName);
         final BlockingQueue<Runnable> queue = new LinkedBlockingQueue<>(queueSize);
@@ -80,7 +81,7 @@ public class SimpleExecutorProvider extends ConfigurableProvider<SimpleExecutor>
         final ThreadPoolExecutor executor = new ThreadPoolExecutor(
                             corePoolSize,
                             maximumPoolSize,
-                            keepAliveTime, TimeUnit.SECONDS,
+                            keepAlive.toNanos(), NANOSECONDS,
                             queue,
                             new SimpleThreadFactory(group, threadPriority),
                             new SimpleRejectedExecutionHandler(executorName));
