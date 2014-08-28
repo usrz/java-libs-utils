@@ -66,7 +66,7 @@ public class SimpleExecutorProvider extends ConfigurableProvider<SimpleExecutor>
     }
 
     @Override
-    protected SimpleExecutor get(Configurations configurations) {
+    public SimpleExecutor get(Configurations configurations) {
         final String executorName  = configurations.get(EXECUTOR_NAME, String.format("%s@%04x", SimpleExecutor.class.getSimpleName(), new Random().nextInt()));
 
         final int corePoolSize     = configurations.validate(CORE_POOL_SIZE,    0,                      (int value) -> value >= 0);
