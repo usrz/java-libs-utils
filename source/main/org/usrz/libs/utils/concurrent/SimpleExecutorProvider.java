@@ -33,6 +33,8 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.inject.Inject;
+
 import org.usrz.libs.configurations.Configurations;
 import org.usrz.libs.logging.Log;
 import org.usrz.libs.utils.inject.ConfigurableProvider;
@@ -48,6 +50,11 @@ public class SimpleExecutorProvider extends ConfigurableProvider<SimpleExecutor>
     public static final String NOTIFIER_THREADS = "notifier_threads";
 
     private static final Log log = new Log(SimpleExecutor.class);
+
+    @Inject
+    private SimpleExecutorProvider() {
+        this(Configurations.EMPTY_CONFIGURATIONS);
+    }
 
     public SimpleExecutorProvider(String name) {
         super(name, true);
