@@ -19,12 +19,13 @@ import static java.lang.Thread.MAX_PRIORITY;
 import static java.lang.Thread.MIN_PRIORITY;
 import static java.lang.Thread.NORM_PRIORITY;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
-import static org.usrz.libs.configurations.Configurations.EMPTY_CONFIGURATIONS;
 
 import java.lang.annotation.Annotation;
 import java.time.Duration;
 import java.util.Random;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.RejectedExecutionHandler;
@@ -44,48 +45,73 @@ public class SimpleExecutorProvider extends ConfigurableProvider<SimpleExecutor>
     public static final String QUEUE_SIZE = "queue_size";
     public static final String THREAD_PRIORITY = "thread_priority";
     public static final String EXECUTOR_NAME = "executor_name";
+    public static final String NOTIFIER_THREADS = "notifier_threads";
 
-    public SimpleExecutorProvider() {
-        this(EMPTY_CONFIGURATIONS);
-    }
+    private static final Log log = new Log(SimpleExecutor.class);
 
     public SimpleExecutorProvider(String name) {
-        super(name);
+        super(name, true);
     }
 
     public SimpleExecutorProvider(Annotation annotation) {
-        super(annotation);
+        super(annotation, true);
     }
 
     public SimpleExecutorProvider(Class<? extends Annotation> annotation) {
-        super(annotation);
+        super(annotation, true);
     }
 
     public SimpleExecutorProvider(Configurations configurations) {
-        super(configurations);
+        super(configurations, true);
     }
 
     @Override
     public SimpleExecutor get(Configurations configurations) {
+        return create(configurations);
+    }
+
+    public static final SimpleExecutor create(Configurations configurations) {
         final String executorName  = configurations.get(EXECUTOR_NAME, String.format("%s@%04x", SimpleExecutor.class.getSimpleName(), new Random().nextInt()));
 
-        final int corePoolSize     = configurations.validate(CORE_POOL_SIZE,    0,                      (int value) -> value >= 0);
-        final int maximumPoolSize  = configurations.validate(MAXIMUM_POOL_SIZE, Integer.MAX_VALUE,      (int value) -> value >= 1);
-        final int queueSize        = configurations.validate(QUEUE_SIZE,        Integer.MAX_VALUE,      (int value) -> value >= 1);
-        final int threadPriority   = configurations.validate(THREAD_PRIORITY,   NORM_PRIORITY,          (int value) -> (value >= MIN_PRIORITY) && (value <= MAX_PRIORITY));
-        final Duration keepAlive   = configurations.validate(KEEP_ALIVE_TIME,   Duration.ofSeconds(60), (Duration value) -> value.getNano() >= 0);
+        final int corePoolSize    = configurations.validate(CORE_POOL_SIZE,    0,                      (int value) -> value >= 0);
+        final int maximumPoolSize = configurations.validate(MAXIMUM_POOL_SIZE, Integer.MAX_VALUE,      (int value) -> value >= 1);
+        final int notifierThreads = configurations.validate(NOTIFIER_THREADS,  0,                      (int value) -> value >= 0);
+        final int queueSize       = configurations.validate(QUEUE_SIZE,        Integer.MAX_VALUE,      (int value) -> value >= 1);
+        final int threadPriority  = configurations.validate(THREAD_PRIORITY,   NORM_PRIORITY,          (int value) -> (value >= MIN_PRIORITY) && (value <= MAX_PRIORITY));
+        final Duration keepAlive  = configurations.validate(KEEP_ALIVE_TIME,   Duration.ofSeconds(60), (Duration value) -> value.getNano() >= 0);
 
+        log.debug("Executor[%s]  core pool size: %d threads",        executorName, corePoolSize);
+        log.debug("Executor[%s]   max pool size: %d threads",        executorName, maximumPoolSize);
+        log.debug("Executor[%s]       notifiers: %d threads",        executorName, notifierThreads);
+        log.debug("Executor[%s]      queue size: %d tasks",          executorName, queueSize);
+        log.debug("Executor[%s] thread priority: %d (%d > %d > %d)", executorName, threadPriority, MIN_PRIORITY, NORM_PRIORITY, MAX_PRIORITY);
+        log.debug("Executor[%s]      keep alive: %d ms",             executorName, keepAlive.toMillis());
+
+        /* How to notify completion */
+        final Executor notifier;
+        if (notifierThreads == 0) {
+            notifier = ((runnable) -> runnable.run());
+        } else {
+            final ThreadGroup group = new ThreadGroup(executorName + "[Notifier]");
+            final ThreadFactory factory = new SimpleThreadFactory(group, threadPriority);
+            notifier = Executors.newFixedThreadPool(notifierThreads, factory);
+        }
+
+        /* Our main execution executor */
         final ThreadGroup group = new ThreadGroup(executorName);
         final BlockingQueue<Runnable> queue = new LinkedBlockingQueue<>(queueSize);
+        final ThreadFactory factory = new SimpleThreadFactory(group, threadPriority);
+        final RejectedExecutionHandler handler = new SimpleRejectedExecutionHandler(executorName);
+        final ThreadPoolExecutor executor = new ThreadPoolExecutor(corePoolSize,
+                                                                   maximumPoolSize,
+                                                                   keepAlive.toNanos(),
+                                                                   NANOSECONDS,
+                                                                   queue,
+                                                                   factory,
+                                                                   handler);
 
-        final ThreadPoolExecutor executor = new ThreadPoolExecutor(
-                            corePoolSize,
-                            maximumPoolSize,
-                            keepAlive.toNanos(), NANOSECONDS,
-                            queue,
-                            new SimpleThreadFactory(group, threadPriority),
-                            new SimpleRejectedExecutionHandler(executorName));
-        return new SimpleExecutor(executor);
+        /* Done, create the executor */
+        return new SimpleExecutor(executorName, executor, notifier);
     }
 
     /* ====================================================================== */
@@ -116,7 +142,6 @@ public class SimpleExecutorProvider extends ConfigurableProvider<SimpleExecutor>
 
     private static class SimpleRejectedExecutionHandler implements RejectedExecutionHandler {
 
-        private static final Log log = new Log(SimpleExecutor.class);
         private final String executorName;
 
         private SimpleRejectedExecutionHandler(String executorName) {
@@ -125,10 +150,11 @@ public class SimpleExecutorProvider extends ConfigurableProvider<SimpleExecutor>
 
         @Override
         public void rejectedExecution(Runnable runnable, ThreadPoolExecutor executor) {
-            final String message = String.format("Executor %s unable to execute %s", executorName, runnable);
+            final String message = String.format("Executor[%s]: unable to execute %s", executorName, runnable);
             log.warn(message);
             throw new RejectedExecutionException(message);
         }
 
     }
+
 }

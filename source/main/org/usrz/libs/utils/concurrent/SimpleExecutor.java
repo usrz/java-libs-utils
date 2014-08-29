@@ -15,15 +15,16 @@
  * ========================================================================== */
 package org.usrz.libs.utils.concurrent;
 
-import static org.usrz.libs.utils.concurrent.Immediate.immediate;
-
 import java.util.Objects;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 
-import com.google.common.util.concurrent.ForwardingFuture;
 import com.google.common.util.concurrent.SettableFuture;
 import com.google.inject.ProvidedBy;
 
@@ -31,9 +32,17 @@ import com.google.inject.ProvidedBy;
 public class SimpleExecutor {
 
     private final ExecutorService executor;
+    private final Executor notifier;
+    private final String name;
 
-    protected SimpleExecutor(ExecutorService executor) {
-        this.executor = Objects.requireNonNull(executor);
+    protected SimpleExecutor(String name, ExecutorService executor, Executor notifier) {
+        this.executor = Objects.requireNonNull(executor, "Null executor");
+        this.notifier = Objects.requireNonNull(notifier, "Null notifier");
+        this.name = name == null ? "Unknown" : name;
+    }
+
+    public String getName() {
+        return name;
     }
 
     public <T> NotifyingFuture<?> run(Runnable runnable) {
@@ -41,57 +50,59 @@ public class SimpleExecutor {
     }
 
     public <T> NotifyingFuture<T> call(Callable<T> callable) {
-        return delegate(() -> immediate(callable.call()));
-    }
+        final SettableFuture<T> settableFuture = SettableFuture.create();
 
-    public <T> NotifyingFuture<T> delegate(Callable<Delegate<T>> delegator) {
-        final SettableFuture<T> future = SettableFuture.create();
-
-        return new DelegatingFuture<T>(future, executor.submit(() -> {
+        final Future<T> executingFuture = executor.submit(() -> {
             try {
-                delegator.call().withConsumer((delegate) -> {
-                    try {
-                        future.set(delegate.get());
-                    } catch (Throwable throwable) {
-                        future.setException(throwable);
-                    }
-                });
-
+                final T result = callable.call();
+                settableFuture.set(result);
+                return result;
             } catch (Throwable throwable) {
-                future.setException(throwable);
+                settableFuture.setException(throwable);
+                throw new Exception(throwable);
             }
-        }));
-    }
+        });
 
-    private class DelegatingFuture<T> extends ForwardingFuture<T> implements NotifyingFuture<T> {
+        return new NotifyingFuture<T>() {
 
-        private final SettableFuture<T> future;
-        private final Future<?> task;
-
-        private DelegatingFuture(SettableFuture<T> future, Future<?> task) {
-            this.future = future;
-            this.task = task;
-        }
-
-        @Override
-        protected Future<T> delegate() {
-            return future;
-        }
-
-        @Override
-        public boolean cancel(boolean mayInterruptIfRunning) {
-            try {
-                return super.cancel(mayInterruptIfRunning);
-            } finally {
-                task.cancel(mayInterruptIfRunning);
+            @Override
+            public boolean cancel(boolean mayInterruptIfRunning) {
+                if (executingFuture.cancel(mayInterruptIfRunning)) {
+                    settableFuture.cancel(mayInterruptIfRunning);
+                    return true;
+                } else {
+                    return false;
+                }
             }
-        }
 
-        @Override
-        public NotifyingFuture<T> withConsumer(Consumer<Future<T>> consumer) {
-            future.addListener(() -> consumer.accept(future), executor);
-            return this;
-        }
+            @Override
+            public boolean isCancelled() {
+                return settableFuture.isCancelled();
+            }
 
+            @Override
+            public boolean isDone() {
+                return settableFuture.isCancelled();
+            }
+
+            @Override
+            public T get()
+            throws InterruptedException, ExecutionException {
+                return settableFuture.get();
+            }
+
+            @Override
+            public T get(long timeout, TimeUnit unit)
+            throws InterruptedException, ExecutionException, TimeoutException {
+                return settableFuture.get(timeout, unit);
+            }
+
+            @Override
+            public NotifyingFuture<T> withConsumer(Consumer<Future<T>> consumer) {
+                settableFuture.addListener(() -> consumer.accept(settableFuture), notifier);
+                return this;
+            }
+
+        };
     }
 }
