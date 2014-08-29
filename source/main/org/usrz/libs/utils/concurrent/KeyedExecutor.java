@@ -43,7 +43,7 @@ public class KeyedExecutor<K> {
         /* Check if we already have a future without synchronizing */
         NotifyingFuture<T> future = (NotifyingFuture<T>) futures.get(key);
         if (future != null) {
-            //log.debug("Executor[%s]: queueing (1) for key %s to existing future", name, key);// %s: %s", name, key, future, callable);
+            log.trace("Executor[%s]: queueing (1) for key %s to existing future %s: %s", name, key, future, callable);
             return future;
         }
 
@@ -51,13 +51,13 @@ public class KeyedExecutor<K> {
             /* Recheck synchronized */
             future = (NotifyingFuture<T>) futures.get(key);
             if (future != null) {
-                //log.debug("Executor[%s]: queueing (2) for key %s to existing future", name, key);// %s: %s", name, key, future, callable);
+                log.trace("Executor[%s]: queueing (2) for key %s to existing future %s: %s", name, key, future, callable);
                 return future;
             }
 
             /* Create a new future and be notified when we're done */
             future = executor.call(callable).withConsumer((f) -> futures.remove(key));
-            log.debug("Executor[%s]: key %s created a new future %s: %s", name, key, future, callable);
+            log.trace("Executor[%s]: key %s created a new future %s: %s", name, key, future, callable);
             futures.put(key, future);
             return future;
         }
