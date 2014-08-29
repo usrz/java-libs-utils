@@ -15,8 +15,6 @@
  * ========================================================================== */
 package org.usrz.libs.utils.concurrent;
 
-import static org.usrz.libs.configurations.Configurations.EMPTY_CONFIGURATIONS;
-
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.testng.annotations.Test;
@@ -36,7 +34,7 @@ public class KeyedExecutorTest extends AbstractTest {
                         .put("queue_size", 1000)
                         .build();
 
-        final KeyedExecutor<String> executor = new KeyedExecutor<>(SimpleExecutorProvider.create(EMPTY_CONFIGURATIONS));
+        final KeyedExecutor<String> executor = new KeyedExecutor<>(SimpleExecutorProvider.create(configurations));
         final AtomicInteger performed = new AtomicInteger(0);
         final AtomicInteger notified = new AtomicInteger(0);
 
