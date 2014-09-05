@@ -20,7 +20,7 @@ import java.time.Duration;
 import org.testng.annotations.Test;
 import org.usrz.libs.testing.AbstractTest;
 
-public class DurationTest extends AbstractTest {
+public class TimesTest extends AbstractTest {
 
     @Test
     public void testDuration() {
@@ -47,5 +47,21 @@ public class DurationTest extends AbstractTest {
         assertEquals(Times.duration("4m"),                                    Duration.parse("PT4M"));
         assertEquals(Times.duration("59s"),                                   Duration.parse("PT59S"));
         assertEquals(Times.duration("1d"),                                    Duration.parse("PT24H"));
+    }
+
+    @Test
+    public void testFormat() {
+        assertEquals(Times.format(Duration.parse("PT51H3M5.22S")), "2 days 3 hours 3 minutes 5.22 seconds");
+        assertEquals(Times.format(Duration.parse("PT25H1M1S")), "1 day 1 hour 1 minute 1 second");
+        assertEquals(Times.format(Duration.parse("PT1H5M3.1S")), "1 hour 5 minutes 3.1 seconds");
+        assertEquals(Times.format(Duration.parse("PT2H35S")), "2 hours 35 seconds");
+        assertEquals(Times.format(Duration.parse("PT7M12S")), "7 minutes 12 seconds");
+        assertEquals(Times.format(Duration.parse("PT3H")), "3 hours");
+        assertEquals(Times.format(Duration.parse("PT4M")), "4 minutes");
+        assertEquals(Times.format(Duration.parse("PT59S")), "59 seconds");
+        assertEquals(Times.format(Duration.parse("PT24H")), "1 day");
+        assertEquals(Times.format(Duration.parse("PT0.1S")), "0.1 seconds");
+        assertEquals(Times.format(Duration.parse("PT1S")), "1 second");
+        assertEquals(Times.format(Duration.parse("PT0S")), "0 seconds");
     }
 }

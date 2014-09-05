@@ -46,4 +46,59 @@ public final class Times {
             throw new DateTimeException("Invalid duration \"" + what + "\" (" + converted + ")", exception);
         }
     }
+
+    public static String format(Duration duration) {
+        if (duration == null) return null;
+
+        final StringBuilder builder = new StringBuilder();
+
+        boolean content = false;
+        final long days = duration.toDays();
+        if (days > 0) {
+            builder.append(days).append(" day");
+            if (days > 1) builder.append('s');
+            duration = duration.minusDays(days);
+            content = true;
+        }
+
+        final long hours = duration.toHours();
+        if (hours > 0) {
+            if (content) builder.append(' ');
+            builder.append(hours).append(" hour");
+            if (hours > 1) builder.append('s');
+            duration = duration.minusHours(hours);
+            content = true;
+        }
+
+        final long minutes = duration.toMinutes();
+        if (minutes > 0) {
+            if (content) builder.append(' ');
+            builder.append(minutes).append(" minute");
+            if (minutes > 1) builder.append('s');
+            duration = duration.minusMinutes(minutes);
+            content = true;
+        }
+
+        final long seconds = duration.getSeconds();
+        final int nanos = duration.getNano();
+        if (content) {
+            if (seconds != 0) {
+                builder.append(' ').append(seconds);
+                if (nanos != 0) {
+                    builder.append(String.format(".%09d", nanos).replaceAll("0+$", ""));
+                }
+                builder.append(" second");
+                if ((seconds != 1) || (nanos > 0)) builder.append('s');
+            }
+        } else {
+            builder.append(seconds);
+            if (nanos != 0) {
+                builder.append(String.format(".%09d", nanos).replaceAll("0+$", ""));
+            }
+            builder.append(" second");
+            if ((seconds != 1) || (nanos > 0)) builder.append('s');
+        }
+
+        return builder.toString();
+    }
 }
