@@ -77,10 +77,11 @@ public class FileWatcher implements Closeable {
         }
     }
 
-    public FileWatcher add(File filex)
+    @SuppressWarnings("resource")
+    public FileWatcher add(File file)
     throws IOException {
-        final File file = filex.getCanonicalFile();
-        final FileSystem fileSystem = file.toPath().getFileSystem();
+        final File canonicalFile = file.getCanonicalFile();
+        final FileSystem fileSystem = canonicalFile.toPath().getFileSystem();
 
         WatchService service = services.get(fileSystem);
         if (service == null) {
@@ -92,9 +93,9 @@ public class FileWatcher implements Closeable {
             pollers.add(poller);
         }
 
-        this.add(service, file);
-        files.add(file);
-        log.info("Watching changes for %s %s", (file.isDirectory() ? "directory" : "file"), file);
+        this.add(service, canonicalFile);
+        files.add(canonicalFile);
+        log.info("Watching changes for %s %s", (canonicalFile.isDirectory() ? "directory" : "file"), canonicalFile);
         return this;
     }
 
@@ -183,6 +184,11 @@ public class FileWatcher implements Closeable {
 
             } catch (InterruptedException exception) {
                 log.debug("Notification listener %s interrupted, exiting...", this);
+                try {
+                    service.close();
+                } catch (IOException ioException) {
+                    log.warn("I/O error closing watch service", exception);
+                }
                 return;
             }
         }
