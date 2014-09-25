@@ -26,7 +26,7 @@ package org.usrz.libs.utils.codecs;
  * @see <a href="http://en.wikipedia.org/wiki/Base64">Base 64</a>
  * @author <a href="mailto:pier@usrz.com">Pier Fumagalli</a>
  */
-public class Base64Codec extends AbstractCodec {
+public class Base64Codec extends AbstractCodec implements ManagedCodec {
 
     /**
      * The various encoding alphabets supported by the {@link Base64Codec}.
@@ -90,6 +90,8 @@ public class Base64Codec extends AbstractCodec {
     private final char[] alphabet;
     /* Whether we support padding or not. */
     private final boolean padding;
+    /* The (normalized) spec for this codec */
+    private final String spec;
 
     /**
      * Create a new {@link Base64Codec} using the
@@ -120,7 +122,33 @@ public class Base64Codec extends AbstractCodec {
     public Base64Codec(final Alphabet alphabet, final boolean padding) {
         this.alphabet = alphabet.alphabet;
         this.padding = padding;
+        spec = new StringBuilder("BASE64/")
+                              .append(alphabet.name())
+                              .append(padding ? "/PADDING" : "/NO_PADDING")
+                              .toString();
     }
+
+    /* ====================================================================== */
+
+    /**
+     * Return the normalized <i>spec</i> {@link String} for this {@link Codec}.
+     *
+     * <p>Possible values are:</p>
+     * <ul>
+     *   <li><code>BASE64/STANDARD/PADDING</code></li>
+     *   <li><code>BASE64/STANDARD/NO_PADDING</code></li>
+     *   <li><code>BASE64/MODULAR_CRYPT/PADDING</code></li>
+     *   <li><code>BASE64/MODULAR_CRYPT/NO_PADDING</code></li>
+     *   <li><code>BASE64/URL_SAFE/PADDING</code></li>
+     *   <li><code>BASE64/URL_SAFE/NO_PADDING</code></li>
+     * </ul>
+     * @return
+     */
+    @Override
+    public String getCodecSpec() {
+        return spec;
+    }
+
     /* ====================================================================== */
 
     @Override

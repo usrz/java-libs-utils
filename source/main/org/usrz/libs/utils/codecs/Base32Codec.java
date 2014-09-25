@@ -28,7 +28,7 @@ import java.util.Arrays;
  * @see <a href="http://en.wikipedia.org/wiki/Base32">Base 32</a>
  * @author <a href="mailto:pier@usrz.com">Pier Fumagalli</a>
  */
-public class Base32Codec extends AbstractCodec {
+public class Base32Codec extends AbstractCodec implements ManagedCodec {
 
     private static final char[] BASE32_UPPER = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567".toCharArray();
     private static final char[] BASE32_LOWER = "abcdefghijklmnopqrstuvwxyz234567".toCharArray();
@@ -49,19 +49,39 @@ public class Base32Codec extends AbstractCodec {
 
     /* The alphabet (upper or lower case) to use for encoding */
     private final char[] alphabet;
+    /* The (normalized) spec for this codec */
+    private final String spec;
 
     /**
      * Create a new {@link HexCodec} using the default upper-case alphabet.
      */
     public Base32Codec() {
-        alphabet = BASE32_UPPER;
+        this(true);
     }
 
     /**
      * Create a new {@link HexCodec} using the default upper-case alphabet.
      */
     public Base32Codec(final boolean upperCase) {
-        alphabet = upperCase ? BASE32_UPPER : BASE32_LOWER;
+        if (upperCase) {
+            alphabet = BASE32_UPPER;
+            spec = "BASE32/UPPER_CASE";
+        } else {
+            alphabet = BASE32_LOWER;
+            spec = "BASE32/LOWER_CASE";
+        }
+    }
+
+    /* ====================================================================== */
+
+    /**
+     * Return the normalized <i>spec</i> {@link String} for this {@link Codec},
+     * either <code>BASE32/UPPER_CASE</code> or <code>BASE32/LOWER_CASE</code>.
+     * @return
+     */
+    @Override
+    public String getCodecSpec() {
+        return spec;
     }
 
     /* ====================================================================== */

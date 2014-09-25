@@ -27,7 +27,7 @@ import java.util.Arrays;
  * @see <a href="http://en.wikipedia.org/wiki/Hexadecimal">Hexadecimal</a>
  * @author <a href="mailto:pier@usrz.com">Pier Fumagalli</a>
  */
-public class HexCodec extends AbstractCodec {
+public class HexCodec extends AbstractCodec implements ManagedCodec {
 
     private static final char[] ALPHABET_UPPER = "0123456789ABCDEF".toCharArray();
     private static final char[] ALPHABET_LOWER = "0123456789abcdef".toCharArray();
@@ -49,12 +49,14 @@ public class HexCodec extends AbstractCodec {
 
     /* The alphabet (upper or lower case) to use for encoding */
     private final char[] alphabet;
+    /* The (normalized) spec for this codec */
+    private final String spec;
 
     /**
      * Create a new {@link HexCodec} using the default upper-case alphabet.
      */
     public HexCodec() {
-        alphabet = ALPHABET_UPPER;
+        this(true);
     }
 
     /**
@@ -64,7 +66,25 @@ public class HexCodec extends AbstractCodec {
      *                  <b>false</b> use the lower-case one.
      */
     public HexCodec(final boolean upperCase) {
-        alphabet = upperCase ? ALPHABET_UPPER : ALPHABET_LOWER;
+        if (upperCase) {
+            alphabet = ALPHABET_UPPER;
+            spec = "HEX/UPPER_CASE";
+        } else {
+            alphabet = ALPHABET_LOWER;
+            spec = "HEX/LOWER_CASE";
+        }
+    }
+
+    /* ====================================================================== */
+
+    /**
+     * Return the normalized <i>spec</i> {@link String} for this {@link Codec},
+     * either <code>HEX/UPPER_CASE</code> or <code>HEX/LOWER_CASE</code>.
+     * @return
+     */
+    @Override
+    public String getCodecSpec() {
+        return spec;
     }
 
     /* ====================================================================== */

@@ -92,7 +92,7 @@ public final class CodecManager {
      * Retrieve an instance of the {@link Codec} associated with the given
      * name (case insensitive).
      */
-    public static final Codec getCodec(String codecSpec) {
+    public static final ManagedCodec getCodec(String codecSpec) {
         final String spec = Objects.requireNonNull(codecSpec, "Null codec").toUpperCase().trim();
         switch (spec) {
             case "HEX"                  :
